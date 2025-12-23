@@ -1,10 +1,10 @@
 import logging
 import os
 
+from app import socketio
 from app.endpoints import endpoints
 from app.shared_state import radio_link
 from flask import Flask
-from flask_socketio import SocketIO
 
 os.environ["MAVLINK20"] = "1"
 
@@ -18,7 +18,6 @@ logger.setLevel(logging.DEBUG)
 flask_logger = logging.getLogger("werkzeug")
 flask_logger.setLevel(logging.INFO)
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
 
 if __name__ == "__main__":
     logger.info("Initialising app")

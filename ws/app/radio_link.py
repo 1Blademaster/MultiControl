@@ -148,6 +148,9 @@ class RadioLink:
             if thread is not None and thread.is_alive() and thread is not this_thread:
                 thread.join(timeout=3)
 
+    def get_drones(self) -> list:
+        return [drone.serialize() for drone in self.drones.values()]
+
     def close(self) -> None:
         self.clear_message_listeners()
         self.is_active.clear()

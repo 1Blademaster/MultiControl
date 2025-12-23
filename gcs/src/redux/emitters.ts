@@ -1,6 +1,13 @@
 import { MiddlewareAPI, UnknownAction } from "@reduxjs/toolkit"
 import { SocketConnection } from "../socket"
-import { emitIsConnectedToDrone } from "./slices/connectionSlice"
+import {
+  emitConnectToRadioLink,
+  emitDisconnectFromRadioLink,
+  emitGetComPorts,
+  emitIsConnectedToRadioLink,
+  setConnectingToRadioLink,
+  setFetchingComPorts,
+} from "./slices/connectionSlice"
 
 export function handleEmitters(
   socket: SocketConnection,
@@ -9,14 +16,29 @@ export function handleEmitters(
 ) {
   if (!socket) return
   const emitHandlers = [
-    /*
-      ====================
-      = DRONE CONNECTION =
-      ====================
-    */
     {
-      emitter: emitIsConnectedToDrone,
-      callback: () => socket.socket.emit("is_connected_to_drone"),
+      emitter: emitIsConnectedToRadioLink,
+      callback: () => socket.socket.emit("is_connected_to_radio_link"),
+    },
+    {
+      emitter: emitConnectToRadioLink,
+      callback: () => {
+        socket.socket.emit("connect_to_radio_link", action.payload)
+        store.dispatch(setConnectingToRadioLink(true))
+      },
+    },
+    {
+      emitter: emitDisconnectFromRadioLink,
+      callback: () => {
+        socket.socket.emit("disconnect_from_radio_link")
+      },
+    },
+    {
+      emitter: emitGetComPorts,
+      callback: () => {
+        socket.socket.emit("get_com_ports")
+        store.dispatch(setFetchingComPorts(true))
+      },
     },
   ]
 

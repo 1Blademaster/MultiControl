@@ -1,20 +1,26 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
 export const ConnectionType = {
   Serial: "serial",
   Network: "network",
 }
 
+interface ConnectToRadioLinkPayload {
+  port: string
+  baud: number
+  connectionType: string
+}
+
 const initialState = {
-  connecting: false,
-  connected: false,
-  connection_modal: false,
+  connectingToRadioLink: false,
+  connectedToRadioLink: false,
+  showConnectionModal: false,
+  connectionType: ConnectionType.Serial,
   baudrate: "57600",
-  connection_type: ConnectionType.Serial,
-  fetching_com_ports: false,
-  com_ports: [],
-  selected_com_ports: null,
-  network_type: "tcp",
+  fetchingComPorts: false,
+  comPorts: [],
+  selectedComPort: null,
+  networkType: "tcp",
   ip: "127.0.0.1",
   port: "5760",
 }
@@ -23,14 +29,14 @@ const connectionSlice = createSlice({
   name: "connection",
   initialState,
   reducers: {
-    setConnecting: (state, action) => {
-      if (action.payload !== state.connecting) {
-        state.connecting = action.payload
+    setConnectingToRadioLink: (state, action) => {
+      if (action.payload !== state.connectingToRadioLink) {
+        state.connectingToRadioLink = action.payload
       }
     },
-    setConnected: (state, action) => {
-      if (action.payload !== state.connected) {
-        state.connected = action.payload
+    setConnectedToRadioLink: (state, action) => {
+      if (action.payload !== state.connectedToRadioLink) {
+        state.connectedToRadioLink = action.payload
       }
     },
     setBaudrate: (state, action) => {
@@ -39,28 +45,28 @@ const connectionSlice = createSlice({
       }
     },
     setConnectionType: (state, action) => {
-      if (action.payload !== state.connection_type) {
-        state.connection_type = action.payload
+      if (action.payload !== state.connectionType) {
+        state.connectionType = action.payload
       }
     },
     setFetchingComPorts: (state, action) => {
-      if (action.payload !== state.fetching_com_ports) {
-        state.fetching_com_ports = action.payload
+      if (action.payload !== state.fetchingComPorts) {
+        state.fetchingComPorts = action.payload
       }
     },
     setComPorts: (state, action) => {
-      if (action.payload !== state.com_ports) {
-        state.com_ports = action.payload
+      if (action.payload !== state.comPorts) {
+        state.comPorts = action.payload
       }
     },
-    setSelectedComPorts: (state, action) => {
-      if (action.payload !== state.selected_com_ports) {
-        state.selected_com_ports = action.payload
+    setSelectedComPort: (state, action) => {
+      if (action.payload !== state.selectedComPort) {
+        state.selectedComPort = action.payload
       }
     },
     setNetworkType: (state, action) => {
-      if (action.payload !== state.network_type) {
-        state.network_type = action.payload
+      if (action.payload !== state.networkType) {
+        state.networkType = action.payload
       }
     },
     setIp: (state, action) => {
@@ -73,88 +79,65 @@ const connectionSlice = createSlice({
         state.port = action.payload
       }
     },
-    setConnectionModal: (state, action) => {
-      if (action.payload !== state.connection_modal) {
-        state.connection_modal = action.payload
+    setShowConnectionModal: (state, action) => {
+      if (action.payload !== state.showConnectionModal) {
+        state.showConnectionModal = action.payload
       }
     },
 
-    emitIsConnectedToDrone: () => {},
-    emitGetComPorts: (state) => {
-      state.fetching_com_ports = true
-    },
-    emitDisconnectFromDrone: () => {},
-    emitConnectToDrone: () => {},
-    emitStartForwarding: () => {},
-    emitStopForwarding: () => {},
-    emitSetState: () => {},
-    emitGetHomePosition: () => {},
-    emitGetCurrentMissionAll: () => {},
-    emitSetLoiterRadius: () => {},
-    emitGetLoiterRadius: () => {},
-    emitReposition: () => {},
-    emitArmDisarm: () => {},
-    emitTakeoff: () => {},
-    emitLand: () => {},
-    emitSetCurrentFlightMode: () => {},
+    emitIsConnectedToRadioLink: () => {},
+    emitGetComPorts: () => {},
+    emitConnectToRadioLink: (
+      _state,
+      _action: PayloadAction<ConnectToRadioLinkPayload>,
+    ) => {},
+    emitDisconnectFromRadioLink: () => {},
   },
   selectors: {
-    selectConnecting: (state) => state.connecting,
-    selectConnectedToDrone: (state) => state.connected,
+    selectConnecting: (state) => state.connectingToRadioLink,
+    selectConnectedToRadioLink: (state) => state.connectedToRadioLink,
     selectBaudrate: (state) => state.baudrate,
-    selectConnectionType: (state) => state.connection_type,
-    selectFetchingComPorts: (state) => state.fetching_com_ports,
-    selectComPorts: (state) => state.com_ports,
-    selectSelectedComPorts: (state) => state.selected_com_ports,
-    selectNetworkType: (state) => state.network_type,
+    selectConnectionType: (state) => state.connectionType,
+    selectFetchingComPorts: (state) => state.fetchingComPorts,
+    selectComPorts: (state) => state.comPorts,
+    selectSelectedComPort: (state) => state.selectedComPort,
+    selectNetworkType: (state) => state.networkType,
     selectIp: (state) => state.ip,
     selectPort: (state) => state.port,
-    selectConnectionModal: (state) => state.connection_modal,
+    selectShowConnectionModal: (state) => state.showConnectionModal,
   },
 })
 
 export const {
-  setConnecting,
-  setConnected,
+  setConnectingToRadioLink,
+  setConnectedToRadioLink,
   setBaudrate,
   setConnectionType,
   setFetchingComPorts,
   setComPorts,
-  setSelectedComPorts,
+  setSelectedComPort,
   setNetworkType,
   setIp,
   setPort,
-  setConnectionModal,
+  setShowConnectionModal,
 
-  emitIsConnectedToDrone,
+  emitIsConnectedToRadioLink,
   emitGetComPorts,
-  emitDisconnectFromDrone,
-  emitConnectToDrone,
-  emitStartForwarding,
-  emitStopForwarding,
-  emitSetState,
-  emitGetHomePosition,
-  emitGetCurrentMissionAll,
-  emitSetLoiterRadius,
-  emitGetLoiterRadius,
-  emitReposition,
-  emitArmDisarm,
-  emitTakeoff,
-  emitLand,
-  emitSetCurrentFlightMode,
+  emitConnectToRadioLink,
+  emitDisconnectFromRadioLink,
 } = connectionSlice.actions
 export const {
   selectConnecting,
-  selectConnectedToDrone,
+  selectConnectedToRadioLink,
   selectBaudrate,
   selectConnectionType,
   selectFetchingComPorts,
   selectComPorts,
-  selectSelectedComPorts,
+  selectSelectedComPort,
   selectNetworkType,
   selectIp,
   selectPort,
-  selectConnectionModal,
+  selectShowConnectionModal,
 } = connectionSlice.selectors
 
 export default connectionSlice

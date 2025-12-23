@@ -32,6 +32,12 @@ class Drone:
         self.ground_speed = vfr_hud.groundspeed
         self.altitude = vfr_hud.alt
 
+    def serialize(self) -> dict:
+        return {
+            "system_id": self.src_system,
+            "component_id": self.src_component,
+        }
+
     def __repr__(self):
         return (
             f"Drone({self.src_system}:{self.src_component}, "

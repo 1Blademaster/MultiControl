@@ -18,10 +18,15 @@
   }
 }
 
+:root[data-mantine-color-scheme="dark"] {
+  --mantine-color-body: var(--color-zinc-800) !important;
+}
+
 html,
 body {
   height: 100%;
   margin: 0;
+  @apply bg-zinc-800;
 }
 
 #root {

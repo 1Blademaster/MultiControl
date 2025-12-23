@@ -5,11 +5,12 @@ import connectionSlice, {
   setIp,
   setNetworkType,
   setPort,
-  setSelectedComPorts,
+  setSelectedComPort,
 } from "./slices/connectionSlice"
+import socketSlice from "./slices/socketSlice"
 import socketMiddleware from "./socketMiddleware"
 
-const rootReducer = combineSlices(connectionSlice)
+const rootReducer = combineSlices(socketSlice, connectionSlice)
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -23,9 +24,9 @@ export const store = configureStore({
 
 // Load individual persisted values from localStorage
 
-const selected_com_port = localStorage.getItem("selected_com_port")
-if (selected_com_port !== null) {
-  store.dispatch(setSelectedComPorts(selected_com_port))
+const selectedComPort = localStorage.getItem("selectedComPort")
+if (selectedComPort !== null) {
+  store.dispatch(setSelectedComPort(selectedComPort))
 }
 
 const baudrate = localStorage.getItem("baudrate")
@@ -70,10 +71,10 @@ const updateLocalStorageIfChanged = (
 store.subscribe(() => {
   const store_mut = store.getState()
 
-  if (typeof store_mut.connection.selected_com_ports === "string") {
+  if (typeof store_mut.connection.selectedComPort === "string") {
     updateLocalStorageIfChanged(
-      "selected_com_port",
-      store_mut.connection.selected_com_ports,
+      "selectedComPort",
+      store_mut.connection.selectedComPort,
     )
   }
 
@@ -81,18 +82,15 @@ store.subscribe(() => {
     updateLocalStorageIfChanged("baudrate", store_mut.connection.baudrate)
   }
 
-  if (typeof store_mut.connection.connection_type === "string") {
+  if (typeof store_mut.connection.connectionType === "string") {
     updateLocalStorageIfChanged(
       "connectionType",
-      store_mut.connection.connection_type,
+      store_mut.connection.connectionType,
     )
   }
 
-  if (typeof store_mut.connection.network_type === "string") {
-    updateLocalStorageIfChanged(
-      "networkType",
-      store_mut.connection.network_type,
-    )
+  if (typeof store_mut.connection.networkType === "string") {
+    updateLocalStorageIfChanged("networkType", store_mut.connection.networkType)
   }
 
   if (typeof store_mut.connection.ip === "string") {

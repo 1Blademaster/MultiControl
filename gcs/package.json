@@ -25,6 +25,7 @@
     "@mantine/hooks": "^8.3.10",
     "@mantine/notifications": "^8.3.10",
     "@reduxjs/toolkit": "^2.11.2",
+    "@tabler/icons-react": "^3.36.0",
     "@tailwindcss/vite": "^4.1.18",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.7.4",

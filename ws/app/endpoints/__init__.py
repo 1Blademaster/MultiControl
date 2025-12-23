@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-# from . import connect as connect
+from . import connection as connection
 
 endpoints = Blueprint("endpoints", __name__)

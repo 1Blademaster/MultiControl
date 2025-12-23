@@ -6,14 +6,18 @@ import {
 
 import { Middleware, UnknownAction } from "@reduxjs/toolkit"
 import SocketFactory, { SocketConnection } from "../socket"
+import {
+  showErrorNotification,
+  showSuccessNotification,
+} from "../utils/notifications"
 import { handleEmitters } from "./emitters"
 import {
-  emitIsConnectedToDrone,
+  emitIsConnectedToRadioLink,
   setComPorts,
-  setConnected,
-  setConnecting,
-  setConnectionModal,
+  setConnectedToRadioLink,
+  setConnectingToRadioLink,
   setFetchingComPorts,
+  setShowConnectionModal,
 } from "./slices/connectionSlice"
 
 const SocketEvents = Object.freeze({
@@ -36,7 +40,7 @@ const socketMiddleware: Middleware = (store) => {
         currentSocket.socket.on(SocketEvents.Connect, () => {
           console.log(`Connected to socket ${currentSocket.socket.id}`)
           store.dispatch(socketConnected())
-          store.dispatch(emitIsConnectedToDrone())
+          store.dispatch(emitIsConnectedToRadioLink())
         })
 
         currentSocket.socket.on(SocketEvents.Disconnect, () => {
@@ -44,59 +48,46 @@ const socketMiddleware: Middleware = (store) => {
           store.dispatch(socketDisconnected())
         })
 
-        currentSocket.socket.on("connected", () => {
-          store.dispatch(setConnected(true))
+        currentSocket.socket.on("connect_to_radio_link_result", (msg) => {
+          if (msg.success) {
+            store.dispatch(setConnectingToRadioLink(false))
+            store.dispatch(setConnectedToRadioLink(true))
+            store.dispatch(setShowConnectionModal(false))
+            showSuccessNotification(msg.message)
+          } else {
+            store.dispatch(setConnectedToRadioLink(false))
+            store.dispatch(setConnectingToRadioLink(false))
+            showErrorNotification(msg.message)
+          }
         })
 
-        currentSocket.socket.on("disconnect", () => {
-          store.dispatch(setConnected(false))
-          store.dispatch(setConnecting(false))
+        currentSocket.socket.on("disconnect_from_radio_link_result", (msg) => {
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+            store.dispatch(setConnectedToRadioLink(false))
+            store.dispatch(setConnectingToRadioLink(false))
+          }
+          // TODO: Currently no failure is emitted
         })
 
-        currentSocket.socket.on("is_connected_to_drone", (msg) => {
-          console.log(msg)
+        currentSocket.socket.on("is_connected_to_radio_link_result", (msg) => {
+          store.dispatch(setConnectedToRadioLink(msg.data))
         })
 
-        currentSocket.socket.on("list_com_ports", (msg) => {
+        currentSocket.socket.on("get_com_ports_result", (msg) => {
           store.dispatch(setFetchingComPorts(false))
-          store.dispatch(setComPorts(msg))
-          // const possibleComPort = msg.find(
-          //   (port) =>
-          //     port.toLowerCase().includes("mavlink") ||
-          //     port.toLowerCase().includes("ardupilot"),
-          // )
-          // if (!store.getState().droneConnection.selected_com_ports) {
-          //   // If no com port is selected, select a possible mavlink/ardupilot port if it exists, otherwise select the first port
-          //   if (possibleComPort !== undefined) {
-          //     store.dispatch(setSelectedComPorts(possibleComPort))
-          //   } else if (msg.length > 0) {
-          //     store.dispatch(setSelectedComPorts(msg[0]))
-          //   }
-          // }
-        })
-
-        currentSocket.socket.on("disconnected_from_drone", () => {
-          store.dispatch(setConnected(false))
-          window.ipcRenderer.send("window:update-title", "FGCS")
+          store.dispatch(setComPorts(msg.data))
         })
 
         currentSocket.socket.on("connection_error", (msg) => {
           console.error("Connection error: " + msg.message)
-          // showErrorNotification(msg.message)
-          store.dispatch(setConnecting(false))
-          store.dispatch(setConnected(false))
-        })
-
-        // Flags that the drone is connected
-        currentSocket.socket.on("connected_to_drone", (msg) => {
-          store.dispatch(setConnected(true))
-          store.dispatch(setConnecting(false))
-          store.dispatch(setConnectionModal(false))
+          store.dispatch(setConnectingToRadioLink(false))
+          store.dispatch(setConnectedToRadioLink(false))
         })
       }
     }
 
-    // if (setConnected.match(action)) {
+    // if (setConnectedToRadioLink.match(action)) {
     //   // Setup socket listeners on drone connection
     //   if (action.payload && socket) {
     //     socket.socket.on(
