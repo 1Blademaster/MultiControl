@@ -1,15 +1,26 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import "./index.css" // Must be at top
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+import "@mantine/core/styles.css"
+import "@mantine/notifications/styles.css"
+
+import { MantineProvider } from "@mantine/core"
+import ReactDOM from "react-dom/client"
+import { Provider } from "react-redux"
+import App from "./App.tsx"
+import { store } from "./redux/store.ts"
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <MantineProvider defaultColorScheme="dark">
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </MantineProvider>,
 )
 
+// Remove Preload scripts loading
+postMessage({ payload: "removeLoading" }, "*")
+
 // Use contextBridge
-window.ipcRenderer.on('main-process-message', (_event, message) => {
+window.ipcRenderer.on("main-process-message", (_event, message) => {
   console.log(message)
 })
