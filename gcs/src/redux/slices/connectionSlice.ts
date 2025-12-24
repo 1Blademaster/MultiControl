@@ -23,6 +23,8 @@ const initialState = {
   networkType: "tcp",
   ip: "127.0.0.1",
   port: "5760",
+  secondsWaitedForConnection: 0,
+  initialHeartbeatMessages: [] as string[],
 }
 
 const connectionSlice = createSlice({
@@ -84,6 +86,18 @@ const connectionSlice = createSlice({
         state.showConnectionModal = action.payload
       }
     },
+    appendInitialHeartbeatMessage: (state, action) => {
+      // Add new heartbeat message to the start of the array
+      state.initialHeartbeatMessages.unshift(action.payload)
+    },
+    clearInitialHeartbeatMessages: (state) => {
+      state.initialHeartbeatMessages = []
+    },
+    setSecondsWaitedForConnection: (state, action) => {
+      if (action.payload !== state.secondsWaitedForConnection) {
+        state.secondsWaitedForConnection = action.payload
+      }
+    },
 
     emitIsConnectedToRadioLink: () => {},
     emitGetComPorts: () => {},
@@ -105,6 +119,9 @@ const connectionSlice = createSlice({
     selectIp: (state) => state.ip,
     selectPort: (state) => state.port,
     selectShowConnectionModal: (state) => state.showConnectionModal,
+    selectInitialHeartbeatMessages: (state) => state.initialHeartbeatMessages,
+    selectSecondsWaitedForConnection: (state) =>
+      state.secondsWaitedForConnection,
   },
 })
 
@@ -120,6 +137,9 @@ export const {
   setIp,
   setPort,
   setShowConnectionModal,
+  appendInitialHeartbeatMessage,
+  clearInitialHeartbeatMessages,
+  setSecondsWaitedForConnection,
 
   emitIsConnectedToRadioLink,
   emitGetComPorts,
@@ -138,6 +158,8 @@ export const {
   selectIp,
   selectPort,
   selectShowConnectionModal,
+  selectInitialHeartbeatMessages,
+  selectSecondsWaitedForConnection,
 } = connectionSlice.selectors
 
 export default connectionSlice

@@ -1,6 +1,7 @@
 import { Button, Text, Tooltip } from "@mantine/core"
 import { useDispatch, useSelector } from "react-redux"
 import {
+  clearInitialHeartbeatMessages,
   ConnectionType,
   emitDisconnectFromRadioLink,
   selectBaudrate,
@@ -10,6 +11,7 @@ import {
   selectNetworkType,
   selectPort,
   selectSelectedComPort,
+  setSecondsWaitedForConnection,
   setShowConnectionModal,
 } from "../redux/slices/connectionSlice.js"
 import { selectIsConnectedToSocket } from "../redux/slices/socketSlice.js"
@@ -29,6 +31,8 @@ export default function Navbar(): JSX.Element {
   const port = useSelector(selectPort)
 
   function connectToRadioLink() {
+    dispatch(clearInitialHeartbeatMessages())
+    dispatch(setSecondsWaitedForConnection(0))
     dispatch(setShowConnectionModal(true))
   }
 
@@ -37,7 +41,7 @@ export default function Navbar(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-row items-center justify-end py-2 px-2 bg-zinc-800">
+    <div className="flex flex-row items-center justify-end p-2 gap-4 bg-zinc-800">
       <ConnectionModal />
 
       {connectedToRadioLink && (

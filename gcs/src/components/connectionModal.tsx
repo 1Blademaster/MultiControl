@@ -3,9 +3,12 @@ import {
   Group,
   LoadingOverlay,
   Modal,
+  Progress,
+  ScrollArea,
   SegmentedControl,
   Select,
   Tabs,
+  Text,
   TextInput,
 } from "@mantine/core"
 import { IconRefresh } from "@tabler/icons-react"
@@ -19,9 +22,11 @@ import {
   selectConnecting,
   selectConnectionType,
   selectFetchingComPorts,
+  selectInitialHeartbeatMessages,
   selectIp,
   selectNetworkType,
   selectPort,
+  selectSecondsWaitedForConnection,
   selectSelectedComPort,
   selectShowConnectionModal,
   setBaudrate,
@@ -50,6 +55,10 @@ export default function ConnectionModal() {
   const connecting = useSelector(selectConnecting)
   const fetchingComPorts = useSelector(selectFetchingComPorts)
   const comPorts = useSelector(selectComPorts)
+  const initialHeartbeatMessages = useSelector(selectInitialHeartbeatMessages)
+  const secondsWaitedForConnection = useSelector(
+    selectSecondsWaitedForConnection,
+  )
 
   function connectToRadioLink(type: string) {
     if (type === ConnectionType.Serial) {
@@ -212,6 +221,30 @@ export default function ConnectionModal() {
           </Button>
         </Group>
       </form>
+
+      {connecting &&
+        secondsWaitedForConnection !== null &&
+        typeof secondsWaitedForConnection === "number" && (
+          <Progress
+            animated
+            size="lg"
+            transitionDuration={300}
+            value={(secondsWaitedForConnection / 10) * 100}
+            className="w-full mx-auto my-4"
+          />
+        )}
+
+      {initialHeartbeatMessages.length !== 0 && (
+        <ScrollArea h={100}>
+          <div className="flex flex-col mt-4 text-center">
+            {initialHeartbeatMessages.map((message, index) => (
+              <Text key={index} size="sm" c="dimmed">
+                {message}
+              </Text>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
     </Modal>
   )
 }

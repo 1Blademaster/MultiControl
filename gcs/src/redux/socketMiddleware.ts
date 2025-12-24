@@ -12,11 +12,13 @@ import {
 } from "../utils/notifications"
 import { handleEmitters } from "./emitters"
 import {
+  appendInitialHeartbeatMessage,
   emitIsConnectedToRadioLink,
   setComPorts,
   setConnectedToRadioLink,
   setConnectingToRadioLink,
   setFetchingComPorts,
+  setSecondsWaitedForConnection,
   setShowConnectionModal,
 } from "./slices/connectionSlice"
 
@@ -63,7 +65,6 @@ const socketMiddleware: Middleware = (store) => {
 
         currentSocket.socket.on("disconnect_from_radio_link_result", (msg) => {
           if (msg.success) {
-            showSuccessNotification(msg.message)
             store.dispatch(setConnectedToRadioLink(false))
             store.dispatch(setConnectingToRadioLink(false))
           }
@@ -83,6 +84,14 @@ const socketMiddleware: Middleware = (store) => {
           console.error("Connection error: " + msg.message)
           store.dispatch(setConnectingToRadioLink(false))
           store.dispatch(setConnectedToRadioLink(false))
+        })
+
+        currentSocket.socket.on("initial_heartbeat_update", (msg) => {
+          if (msg.data !== undefined) {
+            store.dispatch(setSecondsWaitedForConnection(msg.data))
+          } else {
+            store.dispatch(appendInitialHeartbeatMessage(msg.message))
+          }
         })
       }
     }

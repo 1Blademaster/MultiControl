@@ -13,10 +13,17 @@ from app.drone import Drone
 
 
 class RadioLink:
-    def __init__(self, port: str, baud: int = 57600):
+    def __init__(
+        self,
+        port: str,
+        baud: int = 57600,
+        initial_heartbeat_update_callback: Optional[Callable] = None,
+    ):
+        self.logger = logging.getLogger("radio_link")
+
         self.port = port
         self.baud = baud
-        self.logger = logging.getLogger("radio_link")
+        self.initial_heartbeat_update_callback = initial_heartbeat_update_callback
 
         self.logger.info(f"Initialising radio link on {self.port}:{self.baud}")
 
@@ -56,9 +63,11 @@ class RadioLink:
         )
         self._start_threads()
 
-    def _listen_for_initial_heartbeats(self, timeout: int = 30) -> bool:
+    def _listen_for_initial_heartbeats(self, timeout: int = 10) -> bool:
         self.logger.info(f"Listening for initial heartbeats for {timeout} seconds")
         start_time = time.time()
+        time_since_last_update = time.time()
+        seconds_waited = 1
         while True:
             if time.time() - start_time > timeout:
                 break
@@ -76,6 +85,24 @@ class RadioLink:
                     src_system, heartbeat.get_srcComponent()
                 )
                 self.logger.info(f"New drone added: {src_system}")
+                if self.initial_heartbeat_update_callback:
+                    self.initial_heartbeat_update_callback(
+                        {
+                            "success": True,
+                            "message": f"Heartbeat received from drone: {src_system}",
+                        }
+                    )
+
+            # Send heartbeat update every 1 second
+            if (
+                time.time() - time_since_last_update > 1
+                and self.initial_heartbeat_update_callback
+            ):
+                seconds_waited += 1
+                self.initial_heartbeat_update_callback(
+                    {"success": True, "data": seconds_waited}
+                )
+                time_since_last_update = time.time()
 
         if not self.drones:
             return False
@@ -98,7 +125,8 @@ class RadioLink:
         return False
 
     def clear_message_listeners(self) -> None:
-        self.message_listeners.clear()
+        if self.message_listeners:
+            self.message_listeners.clear()
 
     def _handle_incoming_messages(self) -> None:
         while self.is_active.is_set():
@@ -135,7 +163,16 @@ class RadioLink:
 
     def _send_heartbeats_out(self) -> None:
         while self.is_active.is_set():
-            self.master.mav.heartbeat_send()
+            try:
+                self.master.mav.heartbeat_send(
+                    mavutil.mavlink.MAV_TYPE_GCS,
+                    mavutil.mavlink.MAV_AUTOPILOT_INVALID,
+                    0,
+                    0,
+                    mavutil.mavlink.MAV_STATE_ACTIVE,
+                )
+            except Exception as e:
+                self.logger.error(f"Failed to send heartbeat: {e}", exc_info=True)
             time.sleep(1)
 
     def _stop_all_threads(self) -> None:
