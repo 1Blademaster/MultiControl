@@ -7,10 +7,11 @@ import connectionSlice, {
   setPort,
   setSelectedComPort,
 } from "./slices/connectionSlice"
+import dronesSlice from "./slices/dronesSlice"
 import socketSlice from "./slices/socketSlice"
 import socketMiddleware from "./socketMiddleware"
 
-const rootReducer = combineSlices(socketSlice, connectionSlice)
+const rootReducer = combineSlices(socketSlice, connectionSlice, dronesSlice)
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -21,6 +22,8 @@ export const store = configureStore({
     }).concat([socketMiddleware])
   },
 })
+
+export type RootState = ReturnType<typeof store.getState>
 
 // Load individual persisted values from localStorage
 

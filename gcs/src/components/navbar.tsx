@@ -41,7 +41,7 @@ export default function Navbar(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-row items-center justify-end p-2 gap-4 bg-zinc-800">
+    <div className="absolute top-0 left-0 w-full h-14 flex flex-row items-center justify-end p-2 gap-4 bg-zinc-800/80">
       <ConnectionModal />
 
       {connectedToRadioLink && (

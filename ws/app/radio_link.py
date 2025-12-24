@@ -2,7 +2,7 @@ import logging
 import threading
 import time
 import traceback
-from queue import Queue
+from queue import Empty, Queue
 from typing import Callable, Dict, Optional
 
 import serial
@@ -42,12 +42,13 @@ class RadioLink:
 
         self.drones: Dict = {}
 
-        if not self._listen_for_initial_heartbeats():
+        if not self._listen_for_initial_heartbeats(5):
             self.logger.error("Failed to establish initial heartbeat")
             self.close()
             return
 
         self.message_listeners: Dict[str, Callable] = {}
+        self.message_queue: Queue = Queue()
 
         self.sending_command_lock: threading.Lock = threading.Lock()
         self.sending_command_queue: Queue = Queue()
@@ -61,9 +62,12 @@ class RadioLink:
         self.send_heartbeats_out_thread = threading.Thread(
             target=self._send_heartbeats_out, daemon=True
         )
+        self.execute_message_listeners_thread = threading.Thread(
+            target=self._execute_message_listeners, daemon=True
+        )
         self._start_threads()
 
-    def _listen_for_initial_heartbeats(self, timeout: int = 10) -> bool:
+    def _listen_for_initial_heartbeats(self, timeout: int) -> bool:
         self.logger.info(f"Listening for initial heartbeats for {timeout} seconds")
         start_time = time.time()
         time_since_last_update = time.time()
@@ -111,6 +115,7 @@ class RadioLink:
     def _start_threads(self) -> None:
         self.handle_incoming_messages_thread.start()
         self.send_heartbeats_out_thread.start()
+        self.execute_message_listeners_thread.start()
 
     def add_message_listener(self, message_id: str, callback: Callable) -> bool:
         if message_id not in self.message_listeners:
@@ -154,12 +159,20 @@ class RadioLink:
 
             msg_name = msg.get_type()
 
-            if msg_name == "HEARTBEAT":
+            if msg_name == "TIMESYNC":
+                component_timestamp = msg.ts1
+                local_timestamp = time.time_ns()
+                self.master.mav.timesync_send(local_timestamp, component_timestamp)
+                continue
+            elif msg_name == "STATUSTEXT":
+                self.logger.info(f"{msg_src_system}: {msg.text}")
+            elif msg_name == "HEARTBEAT":
                 drone.handle_heartbeat(msg)
-                print(drone)
-
             elif msg_name == "VFR_HUD":
                 drone.handle_vfr_hud(msg)
+
+            if msg_name in self.message_listeners:
+                self.message_queue.put([msg_name, msg])
 
     def _send_heartbeats_out(self) -> None:
         while self.is_active.is_set():
@@ -175,12 +188,23 @@ class RadioLink:
                 self.logger.error(f"Failed to send heartbeat: {e}", exc_info=True)
             time.sleep(1)
 
+    def _execute_message_listeners(self) -> None:
+        while self.is_active.is_set():
+            try:
+                q = self.message_queue.get(timeout=1)
+                self.message_listeners[q[0]](q[1])
+            except Empty:
+                continue
+            except KeyError as e:
+                self.logger.error(f"Could not execute message listener: {e}")
+
     def _stop_all_threads(self) -> None:
         this_thread = threading.current_thread()
 
         for thread in [
             getattr(self, "handle_incoming_messages_thread", None),
             getattr(self, "send_heartbeats_out_thread", None),
+            getattr(self, "execute_message_listeners_thread", None),
         ]:
             if thread is not None and thread.is_alive() and thread is not this_thread:
                 thread.join(timeout=3)

@@ -34,3 +34,7 @@ body {
   flex-flow: column;
   height: 100%;
 }
+
+.maplibregl-canvas:focus-visible {
+  outline: none !important;
+}

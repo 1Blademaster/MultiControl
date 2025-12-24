@@ -21,12 +21,23 @@ import {
   setSecondsWaitedForConnection,
   setShowConnectionModal,
 } from "./slices/connectionSlice"
+import {
+  addDrones,
+  removeDrones,
+  updateGlobalPositionIntData,
+  updateHeartbeatData,
+  updateVfrHudData,
+} from "./slices/dronesSlice"
 
 const SocketEvents = Object.freeze({
   Connect: "connect",
   Disconnect: "disconnect",
   isConnectedToDrone: "is_connected_to_drone",
   listComPorts: "list_com_ports",
+})
+
+const TelemetryEvents = Object.freeze({
+  onTelemetryMessage: "telemetry_message",
 })
 
 const socketMiddleware: Middleware = (store) => {
@@ -48,6 +59,7 @@ const socketMiddleware: Middleware = (store) => {
         currentSocket.socket.on(SocketEvents.Disconnect, () => {
           console.log(`Disconnected from socket ${currentSocket.socket.id}`)
           store.dispatch(socketDisconnected())
+          store.dispatch(setConnectedToRadioLink(false))
         })
 
         currentSocket.socket.on("connect_to_radio_link_result", (msg) => {
@@ -56,6 +68,18 @@ const socketMiddleware: Middleware = (store) => {
             store.dispatch(setConnectedToRadioLink(true))
             store.dispatch(setShowConnectionModal(false))
             showSuccessNotification(msg.message)
+
+            store.dispatch(removeDrones())
+
+            if (msg.data && msg.data.drones) {
+              store.dispatch(
+                addDrones(
+                  msg.data.drones.map(
+                    (drone: { system_id: number }) => drone.system_id,
+                  ),
+                ),
+              )
+            }
           } else {
             store.dispatch(setConnectedToRadioLink(false))
             store.dispatch(setConnectingToRadioLink(false))
@@ -96,23 +120,32 @@ const socketMiddleware: Middleware = (store) => {
       }
     }
 
-    // if (setConnectedToRadioLink.match(action)) {
-    //   // Setup socket listeners on drone connection
-    //   if (action.payload && socket) {
-    //     socket.socket.on(
-    //       DroneSpecificSocketEvents.onForwardingStatus,
-    //       (msg) => {
-    //         if (msg.success) {
-    //           showSuccessNotification(msg.message)
-    //         } else {
-    //           showErrorNotification(msg.message)
-    //         }
-    //       },
-    //     )
-    //   } else {
-    //     // Turn off socket events
-    //   }
-    // }
+    if (setConnectedToRadioLink.match(action)) {
+      // Setup socket listeners on drone connection
+      if (action.payload && socket) {
+        socket.socket.on(TelemetryEvents.onTelemetryMessage, (msg) => {
+          if (msg.success && msg.data) {
+            const packet = msg.data
+            switch (packet.mavpackettype) {
+              case "HEARTBEAT":
+                store.dispatch(updateHeartbeatData(packet))
+                break
+              case "VFR_HUD":
+                store.dispatch(updateVfrHudData(packet))
+                break
+              case "GLOBAL_POSITION_INT":
+                store.dispatch(updateGlobalPositionIntData(packet))
+                break
+              default:
+                break
+            }
+          }
+        })
+      } else {
+        // Turn off socket events
+        Object.values(TelemetryEvents).map((event) => socket?.socket.off(event))
+      }
+    }
 
     // these actions handle emitting based on UI events
     // for each action type, emit socket and pass onto reducer

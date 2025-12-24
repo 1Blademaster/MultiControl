@@ -5,6 +5,7 @@ from typing_extensions import TypedDict
 
 import app.shared_state as state
 from app import socketio
+from app.endpoints.telemetry import setup_telemetry_listeners
 from app.radio_link import RadioLink
 
 logger = logging.getLogger("endpoint.connection")
@@ -105,6 +106,8 @@ def connect_to_radio_link(connection_settings: ConnectionSettings) -> None:
             "data": {"drones": drones_connected_to},
         },
     )
+
+    setup_telemetry_listeners()
 
 
 @socketio.on("disconnect_from_radio_link")
