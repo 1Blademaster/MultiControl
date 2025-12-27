@@ -42,6 +42,11 @@ type BatteryStatusDataRecord = {
   battery_remaining: number
 }
 
+interface ArmVehiclePayload {
+  system_id: number
+  force: boolean
+}
+
 const initialState = {
   droneSysIds: [] as number[],
   droneColors: {} as { [key: number]: string },
@@ -125,6 +130,8 @@ const dronesSlice = createSlice({
       const data = action.payload
       state.batteryStatusData[data.system_id] = data
     },
+
+    emitArmVehicle: (_state, _action: PayloadAction<ArmVehiclePayload>) => {},
   },
   selectors: {
     selectDroneSysIds: (state) => state.droneSysIds,
@@ -142,6 +149,8 @@ export const {
   updateGlobalPositionIntData,
   updateAttitudeData,
   updateBatteryStatusData,
+
+  emitArmVehicle,
 } = dronesSlice.actions
 export const { selectDroneSysIds, selectDroneColors } = dronesSlice.selectors
 

@@ -1,8 +1,9 @@
 import { Button, Text } from "@mantine/core"
 import { CopterMode } from "mavlink-mappings/dist/lib/ardupilotmega"
 import { useMemo } from "react"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import {
+  emitArmVehicle,
   makeGetBatteryStatusData,
   makeGetFlightMode,
   makeGetGlobalPositionIntData,
@@ -18,6 +19,7 @@ export default function DroneCard({
   sysId: number
   color: string
 }) {
+  const dispatch = useDispatch()
   const selectIsArmed = useMemo(() => makeGetIsArmed(sysId), [sysId])
   const selectFlightMode = useMemo(() => makeGetFlightMode(sysId), [sysId])
   const selectVfrHudData = useMemo(() => makeGetVfrHudData(sysId), [sysId])
@@ -42,7 +44,7 @@ export default function DroneCard({
         <Text fw={700} c={color} size="xl">
           Drone {sysId}
         </Text>
-        <Text fw={700} size="xl">
+        <Text fw={700} size="xl" c={isArmed ? "red" : ""}>
           {isArmed ? "ARMED" : "DISARMED"}
         </Text>
         <Text size="xl">{CopterMode[flightMode]}</Text>
@@ -64,7 +66,15 @@ export default function DroneCard({
         </div>
       </div>
       <div className="w-full flex flex-row gap-2">
-        <Button variant="light" color="red" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          color="red"
+          radius={0}
+          size="compact-md"
+          onClick={() =>
+            dispatch(emitArmVehicle({ system_id: sysId, force: false }))
+          }
+        >
           {isArmed ? "DISARM" : "ARM"}
         </Button>
         <Button variant="light" radius={0} size="compact-md">

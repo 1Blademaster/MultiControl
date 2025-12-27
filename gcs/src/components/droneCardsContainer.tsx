@@ -10,6 +10,8 @@ export default function DroneCardsContainer() {
   const droneSysIds = useSelector(selectDroneSysIds)
   const droneColors = useSelector(selectDroneColors)
 
+  console.log(droneSysIds)
+
   return (
     <div
       className="absolute top-14 left-0 p-2"

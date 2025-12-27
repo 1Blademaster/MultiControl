@@ -8,6 +8,7 @@ import {
   setConnectingToRadioLink,
   setFetchingComPorts,
 } from "./slices/connectionSlice"
+import { emitArmVehicle } from "./slices/dronesSlice"
 
 export function handleEmitters(
   socket: SocketConnection,
@@ -38,6 +39,13 @@ export function handleEmitters(
       callback: () => {
         socket.socket.emit("get_com_ports")
         store.dispatch(setFetchingComPorts(true))
+      },
+    },
+
+    {
+      emitter: emitArmVehicle,
+      callback: () => {
+        socket.socket.emit("arm_vehicle", action.payload)
       },
     },
   ]
