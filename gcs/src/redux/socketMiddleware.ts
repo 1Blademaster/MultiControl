@@ -24,6 +24,8 @@ import {
 import {
   addDrones,
   removeDrones,
+  updateAttitudeData,
+  updateBatteryStatusData,
   updateGlobalPositionIntData,
   updateHeartbeatData,
   updateVfrHudData,
@@ -128,13 +130,60 @@ const socketMiddleware: Middleware = (store) => {
             const packet = msg.data
             switch (packet.mavpackettype) {
               case "HEARTBEAT":
-                store.dispatch(updateHeartbeatData(packet))
+                store.dispatch(
+                  updateHeartbeatData({
+                    system_id: packet.system_id,
+                    type: packet.type,
+                    autopilot: packet.autopilot,
+                    base_mode: packet.base_mode,
+                    custom_mode: packet.custom_mode,
+                    system_status: packet.system_status,
+                  }),
+                )
                 break
               case "VFR_HUD":
-                store.dispatch(updateVfrHudData(packet))
+                store.dispatch(
+                  updateVfrHudData({
+                    system_id: packet.system_id,
+                    heading: packet.heading,
+                    alt: packet.alt,
+                    groundSpeed: packet.groundSpeed,
+                    climb: packet.climb,
+                  }),
+                )
                 break
               case "GLOBAL_POSITION_INT":
-                store.dispatch(updateGlobalPositionIntData(packet))
+                store.dispatch(
+                  updateGlobalPositionIntData({
+                    system_id: packet.system_id,
+                    lat: packet.lat,
+                    lon: packet.lon,
+                    alt: packet.alt,
+                    relative_alt: packet.relative_alt,
+                    hdg: packet.hdg,
+                  }),
+                )
+                break
+              case "ATTITUDE":
+                store.dispatch(
+                  updateAttitudeData({
+                    system_id: packet.system_id,
+                    pitch: packet.pitch,
+                    roll: packet.roll,
+                    yaw: packet.yaw,
+                  }),
+                )
+                break
+              case "BATTERY_STATUS":
+                store.dispatch(
+                  updateBatteryStatusData({
+                    system_id: packet.system_id,
+                    voltage: packet.voltages[0],
+                    current: packet.current,
+                    current_consumed: packet.current_consumed,
+                    battery_remaining: packet.battery_remaining,
+                  }),
+                )
                 break
               default:
                 break

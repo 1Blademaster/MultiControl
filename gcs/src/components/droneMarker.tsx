@@ -37,6 +37,7 @@ export default function DroneMarker({
           c={color ?? "#FFFFFF"}
           style={{
             filter: dropShadowString,
+            lineHeight: 1,
           }}
         >
           {sysId}

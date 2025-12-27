@@ -1,3 +1,4 @@
+import { ScrollArea } from "@mantine/core"
 import { useSelector } from "react-redux"
 import {
   selectDroneColors,
@@ -10,10 +11,17 @@ export default function DroneCardsContainer() {
   const droneColors = useSelector(selectDroneColors)
 
   return (
-    <div className="absolute top-14 left-0 pointer-events-none p-2 flex flex-col gap-2">
-      {droneSysIds.map((sysId) => (
-        <DroneCard key={sysId} sysId={sysId} color={droneColors[sysId]} />
-      ))}
+    <div
+      className="absolute top-14 left-0 p-2"
+      style={{ height: "calc(100vh - 3.5rem)" }}
+    >
+      <ScrollArea h="100%">
+        <div className="flex flex-col gap-2">
+          {droneSysIds.map((sysId) => (
+            <DroneCard key={sysId} sysId={sysId} color={droneColors[sysId]} />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   )
 }

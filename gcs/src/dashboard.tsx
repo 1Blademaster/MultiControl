@@ -1,5 +1,6 @@
 import { useRef } from "react"
 import { MapRef } from "react-map-gl/maplibre"
+import ControlBar from "./components/controlBar"
 import DroneCardsContainer from "./components/droneCardsContainer"
 import MapSection from "./components/mapSection"
 import Navbar from "./components/navbar"
@@ -15,6 +16,8 @@ export default function Dashboard() {
       <Navbar />
 
       <DroneCardsContainer />
+
+      <ControlBar />
     </div>
   )
 }

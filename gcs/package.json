@@ -29,6 +29,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "eslint-config-prettier": "^10.1.8",
     "maplibre-gl": "^5.15.0",
+    "node-mavlink": "^2.3.0",
     "prettier": "^3.7.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

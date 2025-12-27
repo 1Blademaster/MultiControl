@@ -27,12 +27,29 @@ type GlobalPositionIntRecord = {
   hdg: number
 }
 
+type AttitudeDataRecord = {
+  system_id: number
+  pitch: number
+  roll: number
+  yaw: number
+}
+
+type BatteryStatusDataRecord = {
+  system_id: number
+  voltage: number
+  current: number
+  current_consumed: number
+  battery_remaining: number
+}
+
 const initialState = {
   droneSysIds: [] as number[],
   droneColors: {} as { [key: number]: string },
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
   globalPositionIntData: {} as { [key: number]: GlobalPositionIntRecord },
+  attitudeData: {} as { [key: number]: AttitudeDataRecord },
+  batteryStatusData: {} as { [key: number]: BatteryStatusDataRecord },
 }
 
 const MAV_MODE_FLAG_SAFETY_ARMED = 128
@@ -97,6 +114,17 @@ const dronesSlice = createSlice({
       const data = action.payload
       state.globalPositionIntData[data.system_id] = data
     },
+    updateAttitudeData: (state, action: PayloadAction<AttitudeDataRecord>) => {
+      const data = action.payload
+      state.attitudeData[data.system_id] = data
+    },
+    updateBatteryStatusData: (
+      state,
+      action: PayloadAction<BatteryStatusDataRecord>,
+    ) => {
+      const data = action.payload
+      state.batteryStatusData[data.system_id] = data
+    },
   },
   selectors: {
     selectDroneSysIds: (state) => state.droneSysIds,
@@ -112,6 +140,8 @@ export const {
   updateHeartbeatData,
   updateVfrHudData,
   updateGlobalPositionIntData,
+  updateAttitudeData,
+  updateBatteryStatusData,
 } = dronesSlice.actions
 export const { selectDroneSysIds, selectDroneColors } = dronesSlice.selectors
 
@@ -134,5 +164,12 @@ export const makeGetVfrHudData = (droneSysId: number) => (state: RootState) =>
 export const makeGetGlobalPositionIntData =
   (droneSysId: number) => (state: RootState) =>
     state.drones.globalPositionIntData[droneSysId]
+
+export const makeGetAttitudeData = (droneSysId: number) => (state: RootState) =>
+  state.drones.attitudeData[droneSysId]
+
+export const makeGetBatteryStatusData =
+  (droneSysId: number) => (state: RootState) =>
+    state.drones.batteryStatusData[droneSysId]
 
 export default dronesSlice

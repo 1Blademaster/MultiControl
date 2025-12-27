@@ -29,4 +29,18 @@ export default defineConfig({
           : {},
     }),
   ],
+  resolve: {
+    alias: {
+      events: "events",
+    },
+  },
+  optimizeDeps: {
+    include: ["mavlink-mappings"],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/mavlink-mappings/, /node_modules/],
+      transformMixedEsModules: true,
+    },
+  },
 })
