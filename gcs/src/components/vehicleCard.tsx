@@ -10,15 +10,18 @@ import {
   makeGetGlobalPositionIntData,
   makeGetIsArmed,
   makeGetVfrHudData,
+  VehicleType,
 } from "../redux/slices/vehiclesSlice"
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
 
 export default function VehicleCard({
   sysId,
   color,
+  vehicleType,
 }: {
   sysId: number
   color: string
+  vehicleType: VehicleType
 }) {
   const dispatch = useDispatch()
   const selectIsArmed = useMemo(() => makeGetIsArmed(sysId), [sysId])
@@ -57,6 +60,7 @@ export default function VehicleCard({
           {isArmed ? "ARMED" : "DISARMED"}
         </Text>
         <Text size="xl">{CopterMode[flightMode]}</Text>
+        <Text size="xl">{vehicleType}</Text>
       </div>
       <div className="flex flex-row gap-6">
         <div className="flex flex-col">

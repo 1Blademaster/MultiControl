@@ -29,6 +29,7 @@ import {
   updateGlobalPositionIntData,
   updateHeartbeatData,
   updateVfrHudData,
+  VehicleType,
 } from "./slices/vehiclesSlice"
 
 const SocketEvents = Object.freeze({
@@ -82,7 +83,13 @@ const socketMiddleware: Middleware = (store) => {
               store.dispatch(
                 addVehicles(
                   msg.data.vehicles.map(
-                    (vehicle: { system_id: number }) => vehicle.system_id,
+                    (vehicle: {
+                      system_id: number
+                      vehicle_type: VehicleType
+                    }) => ({
+                      system_id: vehicle.system_id,
+                      vehicle_type: vehicle.vehicle_type,
+                    }),
                   ),
                 ),
               )

@@ -1,6 +1,17 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RootState } from "../store"
 
+export enum VehicleType {
+  UNKNOWN = "unknown",
+  COPTER = "copter",
+  PLANE = "plane",
+  ROVER = "rover",
+  BOAT = "boat",
+  TRACKER = "tracker",
+  SUB = "sub",
+  BLIMP = "blimp",
+}
+
 type HeartbeatRecord = {
   system_id: number
   type: number
@@ -49,6 +60,7 @@ interface ArmDisarmVehiclePayload {
 
 const initialState = {
   vehicleSysIds: [] as number[],
+  vehicleTypes: {} as { [key: number]: VehicleType },
   vehicleColors: {} as { [key: number]: string },
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
@@ -81,28 +93,39 @@ const vehiclesSlice = createSlice({
   name: "vehicles",
   initialState,
   reducers: {
-    addVehicles: (state, action: PayloadAction<number[]>) => {
-      state.vehicleSysIds.push(...action.payload)
+    addVehicles: (
+      state,
+      action: PayloadAction<{ system_id: number; vehicle_type: VehicleType }[]>,
+    ) => {
+      state.vehicleSysIds.push(...action.payload.map((v) => v.system_id))
       state.vehicleSysIds.sort((a, b) => a - b)
-      action.payload.forEach((id) => {
-        state.vehicleColors[id] = vehicleColorsMap[id % vehicleColorsMap.length]
+      action.payload.forEach((v) => {
+        state.vehicleColors[v.system_id] =
+          vehicleColorsMap[v.system_id % vehicleColorsMap.length]
+        state.vehicleTypes[v.system_id] = v.vehicle_type
       })
     },
-    addVehicle: (state, action: PayloadAction<number>) => {
-      state.vehicleSysIds.push(action.payload)
+    addVehicle: (
+      state,
+      action: PayloadAction<{ system_id: number; vehicle_type: VehicleType }>,
+    ) => {
+      state.vehicleSysIds.push(action.payload.system_id)
       state.vehicleSysIds.sort((a, b) => a - b)
-      state.vehicleColors[action.payload] =
-        vehicleColorsMap[action.payload % vehicleColorsMap.length]
+      state.vehicleColors[action.payload.system_id] =
+        vehicleColorsMap[action.payload.system_id % vehicleColorsMap.length]
+      state.vehicleTypes[action.payload.system_id] = action.payload.vehicle_type
     },
     removeVehicles: (state) => {
       state.vehicleSysIds = []
       state.vehicleColors = {}
+      state.vehicleTypes = {}
     },
-    removeVehicle: (state, action: PayloadAction<number>) => {
+    removeVehicle: (state, action: PayloadAction<{ system_id: number }>) => {
       state.vehicleSysIds = state.vehicleSysIds.filter(
-        (id) => id !== action.payload,
+        (id) => id !== action.payload.system_id,
       )
-      delete state.vehicleColors[action.payload]
+      delete state.vehicleColors[action.payload.system_id]
+      delete state.vehicleTypes[action.payload.system_id]
     },
     updateHeartbeatData: (state, action: PayloadAction<HeartbeatRecord>) => {
       const data = action.payload
@@ -142,6 +165,7 @@ const vehiclesSlice = createSlice({
   },
   selectors: {
     selectVehicleSysIds: (state) => state.vehicleSysIds,
+    selectVehicleTypes: (state) => state.vehicleTypes,
     selectVehicleColors: (state) => state.vehicleColors,
   },
 })
@@ -160,7 +184,7 @@ export const {
   emitArmVehicle,
   emitDisarmVehicle,
 } = vehiclesSlice.actions
-export const { selectVehicleSysIds, selectVehicleColors } =
+export const { selectVehicleSysIds, selectVehicleTypes, selectVehicleColors } =
   vehiclesSlice.selectors
 
 // Memoized selector factories

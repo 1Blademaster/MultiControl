@@ -3,12 +3,14 @@ import { useSelector } from "react-redux"
 import {
   selectVehicleColors,
   selectVehicleSysIds,
+  selectVehicleTypes,
 } from "../redux/slices/vehiclesSlice"
 import VehicleCard from "./vehicleCard"
 
 export default function VehicleCardsContainer() {
   const vehicleSysIds = useSelector(selectVehicleSysIds)
   const vehicleColors = useSelector(selectVehicleColors)
+  const vehicleTypes = useSelector(selectVehicleTypes)
 
   return (
     <div
@@ -22,6 +24,7 @@ export default function VehicleCardsContainer() {
               key={sysId}
               sysId={sysId}
               color={vehicleColors[sysId]}
+              vehicleType={vehicleTypes[sysId]}
             />
           ))}
         </div>
