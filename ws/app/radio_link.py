@@ -9,8 +9,8 @@ import serial
 from pymavlink import mavutil
 from pymavlink.mavutil import mavlink
 
-from app.types import Response
-from app.utils import command_accepted
+from app.types import Response, VehicleType
+from app.utils import command_accepted, get_vehicle_type_from_heartbeat
 from app.vehicle import Vehicle
 
 
@@ -89,18 +89,30 @@ class RadioLink:
             if heartbeat is None:
                 continue
 
-            src_system = heartbeat.get_srcSystem()
+            vehicle_type = get_vehicle_type_from_heartbeat(heartbeat)
+            if vehicle_type == VehicleType.UNKNOWN:
+                self.logger.warning(f"Unknown vehicle type for heartbeat: {heartbeat}")
+                continue
 
-            if src_system not in self.vehicles:
-                self.vehicles[src_system] = Vehicle(
-                    src_system, heartbeat.get_srcComponent()
+            system_id = heartbeat.get_srcSystem()
+
+            if system_id not in self.vehicles:
+                component_id = heartbeat.get_srcComponent()
+                if component_id != mavlink.MAV_COMP_ID_AUTOPILOT1:
+                    self.logger.warning(
+                        f"Unexpected component_id for heartbeat: {component_id}"
+                    )
+                    continue
+
+                self.vehicles[system_id] = Vehicle(
+                    system_id, component_id, heartbeat.type, vehicle_type
                 )
-                self.logger.info(f"New vehicle added: {src_system}")
+                self.logger.info(f"New vehicle added: {system_id}")
                 if self.initial_heartbeat_update_callback:
                     self.initial_heartbeat_update_callback(
                         {
                             "success": True,
-                            "message": f"Heartbeat received from vehicle: {src_system}",
+                            "message": f"Heartbeat received from {vehicle_type.value}: {system_id}:{component_id}",
                         }
                     )
 
@@ -137,7 +149,7 @@ class RadioLink:
         return False
 
     def clear_message_listeners(self) -> None:
-        if self.message_listeners:
+        if getattr(self, "message_listeners", None):
             self.message_listeners.clear()
 
     def _handle_incoming_messages(self) -> None:
