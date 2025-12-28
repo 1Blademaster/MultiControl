@@ -1,7 +1,7 @@
 {
   "name": "multicontrol",
   "productName": "MultiControl",
-  "description": "A multi-drone GCS",
+  "description": "A multi-vehicle MAVLink GCS",
   "author": {
     "name": "Kush Makkapati",
     "email": "kush.makkapati@icloud.com"

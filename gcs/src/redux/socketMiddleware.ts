@@ -22,19 +22,19 @@ import {
   setShowConnectionModal,
 } from "./slices/connectionSlice"
 import {
-  addDrones,
-  removeDrones,
+  addVehicles,
+  removeVehicles,
   updateAttitudeData,
   updateBatteryStatusData,
   updateGlobalPositionIntData,
   updateHeartbeatData,
   updateVfrHudData,
-} from "./slices/dronesSlice"
+} from "./slices/vehiclesSlice"
 
 const SocketEvents = Object.freeze({
   Connect: "connect",
   Disconnect: "disconnect",
-  isConnectedToDrone: "is_connected_to_drone",
+  isConnectedToVehicle: "is_connected_to_vehicle",
   listComPorts: "list_com_ports",
 })
 
@@ -75,13 +75,13 @@ const socketMiddleware: Middleware = (store) => {
             store.dispatch(setShowConnectionModal(false))
             showSuccessNotification(msg.message)
 
-            store.dispatch(removeDrones())
+            store.dispatch(removeVehicles())
 
-            if (msg.data && msg.data.drones) {
+            if (msg.data && msg.data.vehicles) {
               store.dispatch(
-                addDrones(
-                  msg.data.drones.map(
-                    (drone: { system_id: number }) => drone.system_id,
+                addVehicles(
+                  msg.data.vehicles.map(
+                    (vehicle: { system_id: number }) => vehicle.system_id,
                   ),
                 ),
               )
@@ -127,7 +127,7 @@ const socketMiddleware: Middleware = (store) => {
     }
 
     if (setConnectedToRadioLink.match(action)) {
-      // Setup socket listeners on drone connection
+      // Setup socket listeners on vehicle connection
       if (action.payload && socket) {
         socket.socket.on(TelemetryEvents.onTelemetryMessage, (msg) => {
           if (msg.success && msg.data) {

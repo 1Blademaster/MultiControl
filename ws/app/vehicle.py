@@ -8,13 +8,13 @@ def get_flight_mode_string(flight_mode: int) -> str:
     return mavutil.mode_string_acm(flight_mode)
 
 
-class Drone:
+class Vehicle:
     def __init__(self, src_system: int, src_component: int):
         self.src_system: int = src_system
         self.src_component: int = src_component
 
         self.logger: logging.Logger = logging.getLogger(
-            f"drone_{self.src_system}_{self.src_component}"
+            f"vehicle_{self.src_system}_{self.src_component}"
         )
 
         self.armed: bool = False
@@ -40,7 +40,7 @@ class Drone:
 
     def __repr__(self):
         return (
-            f"Drone({self.src_system}:{self.src_component}, "
+            f"Vehicle({self.src_system}:{self.src_component}, "
             f"armed={self.armed}, ground_speed={self.ground_speed}, altitude={self.altitude}, "
             f"flight_mode={get_flight_mode_string(self.flight_mode)})"
         )

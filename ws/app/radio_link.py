@@ -9,9 +9,9 @@ import serial
 from pymavlink import mavutil
 from pymavlink.mavutil import mavlink
 
-from app.drone import Drone
 from app.types import Response
 from app.utils import command_accepted
+from app.vehicle import Vehicle
 
 
 class RadioLink:
@@ -42,7 +42,7 @@ class RadioLink:
             self.close()
             return
 
-        self.drones: Dict = {}
+        self.vehicles: Dict = {}
 
         if not self._listen_for_initial_heartbeats(5):
             self.logger.error("Failed to establish initial heartbeat")
@@ -91,16 +91,16 @@ class RadioLink:
 
             src_system = heartbeat.get_srcSystem()
 
-            if src_system not in self.drones:
-                self.drones[src_system] = Drone(
+            if src_system not in self.vehicles:
+                self.vehicles[src_system] = Vehicle(
                     src_system, heartbeat.get_srcComponent()
                 )
-                self.logger.info(f"New drone added: {src_system}")
+                self.logger.info(f"New vehicle added: {src_system}")
                 if self.initial_heartbeat_update_callback:
                     self.initial_heartbeat_update_callback(
                         {
                             "success": True,
-                            "message": f"Heartbeat received from drone: {src_system}",
+                            "message": f"Heartbeat received from vehicle: {src_system}",
                         }
                     )
 
@@ -115,7 +115,7 @@ class RadioLink:
                 )
                 time_since_last_update = time.time()
 
-        if not self.drones:
+        if not self.vehicles:
             return False
         return True
 
@@ -159,10 +159,10 @@ class RadioLink:
             msg_src_system = msg.get_srcSystem()
             # msg_src_component = msg.get_srcComponent()
 
-            if msg_src_system not in self.drones:
+            if msg_src_system not in self.vehicles:
                 continue
 
-            drone = self.drones[msg_src_system]
+            vehicle = self.vehicles[msg_src_system]
 
             msg_name = msg.get_type()
 
@@ -174,9 +174,9 @@ class RadioLink:
             elif msg_name == "STATUSTEXT":
                 self.logger.info(f"{msg_src_system}: {msg.text}")
             elif msg_name == "HEARTBEAT":
-                drone.handle_heartbeat(msg)
+                vehicle.handle_heartbeat(msg)
             elif msg_name == "VFR_HUD":
-                drone.handle_vfr_hud(msg)
+                vehicle.handle_vfr_hud(msg)
 
             with self.reservation_lock:
                 if msg_name in self.reserved_messages:
@@ -280,8 +280,8 @@ class RadioLink:
         )
         return None
 
-    def get_drones(self) -> list:
-        return [drone.serialize() for drone in self.drones.values()]
+    def get_vehicles(self) -> list:
+        return [vehicle.serialize() for vehicle in self.vehicles.values()]
 
     def send_command_to_vehicle(
         self,
@@ -338,9 +338,9 @@ class RadioLink:
             if command_accepted(
                 response, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, self.logger
             ):
-                # Wait for the drone to be armed fully after the command has been accepted
+                # Wait for the vehicle to be armed fully after the command has been accepted
                 self.logger.debug(f"[{system_id}] Waiting for arm")
-                while not self.drones[system_id].armed:
+                while not self.vehicles[system_id].armed:
                     time.sleep(0.05)
                 self.logger.debug(f"[{system_id}] ARMED")
                 return {"success": True, "message": "Armed successfully"}

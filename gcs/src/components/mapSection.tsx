@@ -4,18 +4,18 @@ import React from "react"
 import Map, { MapRef } from "react-map-gl/maplibre"
 import { useSelector } from "react-redux"
 import {
-  selectDroneColors,
-  selectDroneSysIds,
-} from "../redux/slices/dronesSlice"
-import DroneMarker from "./droneMarker"
+  selectVehicleColors,
+  selectVehicleSysIds,
+} from "../redux/slices/vehiclesSlice"
+import VehicleMarker from "./vehicleMarker"
 
 interface MapSectionProps {
   passedRef: React.Ref<MapRef>
 }
 
 function MapSectionNonMemo({ passedRef }: MapSectionProps) {
-  const droneSysIds = useSelector(selectDroneSysIds)
-  const droneColors = useSelector(selectDroneColors)
+  const vehicleSysIds = useSelector(selectVehicleSysIds)
+  const vehicleColors = useSelector(selectVehicleColors)
 
   const [initialViewState, setInitialViewState] = useLocalStorage({
     key: "initialViewState",
@@ -41,8 +41,12 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
         cursor="default"
         style={{ outline: "none" }}
       >
-        {droneSysIds.map((sysId) => (
-          <DroneMarker key={sysId} sysId={sysId} color={droneColors[sysId]} />
+        {vehicleSysIds.map((sysId) => (
+          <VehicleMarker
+            key={sysId}
+            sysId={sysId}
+            color={vehicleColors[sysId]}
+          />
         ))}
       </Map>
     </div>

@@ -8,7 +8,7 @@ import {
   setConnectingToRadioLink,
   setFetchingComPorts,
 } from "./slices/connectionSlice"
-import { emitArmVehicle } from "./slices/dronesSlice"
+import { emitArmVehicle } from "./slices/vehiclesSlice"
 
 export function handleEmitters(
   socket: SocketConnection,

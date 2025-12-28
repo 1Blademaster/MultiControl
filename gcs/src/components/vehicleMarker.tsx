@@ -2,10 +2,10 @@ import { Text } from "@mantine/core"
 import { useMemo } from "react"
 import { Marker } from "react-map-gl/maplibre"
 import { useSelector } from "react-redux"
-import { makeGetGlobalPositionIntData } from "../redux/slices/dronesSlice"
+import { makeGetGlobalPositionIntData } from "../redux/slices/vehiclesSlice"
 import { centiDegToDeg, intToCoord } from "../utils/dataFormatters"
 
-export default function DroneMarker({
+export default function VehicleMarker({
   sysId,
   color,
 }: {

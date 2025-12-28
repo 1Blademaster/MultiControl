@@ -48,8 +48,8 @@ interface ArmVehiclePayload {
 }
 
 const initialState = {
-  droneSysIds: [] as number[],
-  droneColors: {} as { [key: number]: string },
+  vehicleSysIds: [] as number[],
+  vehicleColors: {} as { [key: number]: string },
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
   globalPositionIntData: {} as { [key: number]: GlobalPositionIntRecord },
@@ -59,7 +59,7 @@ const initialState = {
 
 const MAV_MODE_FLAG_SAFETY_ARMED = 128
 
-const droneColorsMap = [
+const vehicleColorsMap = [
   "#dc2626",
   "#f59e0b",
   "#d946ef",
@@ -77,32 +77,32 @@ const droneColorsMap = [
   "#f97316",
 ]
 
-const dronesSlice = createSlice({
-  name: "drones",
+const vehiclesSlice = createSlice({
+  name: "vehicles",
   initialState,
   reducers: {
-    addDrones: (state, action: PayloadAction<number[]>) => {
-      state.droneSysIds.push(...action.payload)
-      state.droneSysIds.sort((a, b) => a - b)
+    addVehicles: (state, action: PayloadAction<number[]>) => {
+      state.vehicleSysIds.push(...action.payload)
+      state.vehicleSysIds.sort((a, b) => a - b)
       action.payload.forEach((id) => {
-        state.droneColors[id] = droneColorsMap[id % droneColorsMap.length]
+        state.vehicleColors[id] = vehicleColorsMap[id % vehicleColorsMap.length]
       })
     },
-    addDrone: (state, action: PayloadAction<number>) => {
-      state.droneSysIds.push(action.payload)
-      state.droneSysIds.sort((a, b) => a - b)
-      state.droneColors[action.payload] =
-        droneColorsMap[action.payload % droneColorsMap.length]
+    addVehicle: (state, action: PayloadAction<number>) => {
+      state.vehicleSysIds.push(action.payload)
+      state.vehicleSysIds.sort((a, b) => a - b)
+      state.vehicleColors[action.payload] =
+        vehicleColorsMap[action.payload % vehicleColorsMap.length]
     },
-    removeDrones: (state) => {
-      state.droneSysIds = []
-      state.droneColors = {}
+    removeVehicles: (state) => {
+      state.vehicleSysIds = []
+      state.vehicleColors = {}
     },
-    removeDrone: (state, action: PayloadAction<number>) => {
-      state.droneSysIds = state.droneSysIds.filter(
+    removeVehicle: (state, action: PayloadAction<number>) => {
+      state.vehicleSysIds = state.vehicleSysIds.filter(
         (id) => id !== action.payload,
       )
-      delete state.droneColors[action.payload]
+      delete state.vehicleColors[action.payload]
     },
     updateHeartbeatData: (state, action: PayloadAction<HeartbeatRecord>) => {
       const data = action.payload
@@ -134,16 +134,16 @@ const dronesSlice = createSlice({
     emitArmVehicle: (_state, _action: PayloadAction<ArmVehiclePayload>) => {},
   },
   selectors: {
-    selectDroneSysIds: (state) => state.droneSysIds,
-    selectDroneColors: (state) => state.droneColors,
+    selectVehicleSysIds: (state) => state.vehicleSysIds,
+    selectVehicleColors: (state) => state.vehicleColors,
   },
 })
 
 export const {
-  addDrones,
-  addDrone,
-  removeDrones,
-  removeDrone,
+  addVehicles,
+  addVehicle,
+  removeVehicles,
+  removeVehicle,
   updateHeartbeatData,
   updateVfrHudData,
   updateGlobalPositionIntData,
@@ -151,34 +151,36 @@ export const {
   updateBatteryStatusData,
 
   emitArmVehicle,
-} = dronesSlice.actions
-export const { selectDroneSysIds, selectDroneColors } = dronesSlice.selectors
+} = vehiclesSlice.actions
+export const { selectVehicleSysIds, selectVehicleColors } =
+  vehiclesSlice.selectors
 
 // Memoized selector factories
-export const makeGetIsArmed = (droneSysId: number) =>
+export const makeGetIsArmed = (vehicleSysId: number) =>
   createSelector(
-    [(state: RootState) => state.drones.heartbeatData[droneSysId]],
+    [(state: RootState) => state.vehicles.heartbeatData[vehicleSysId]],
     (heartbeat) => !!(heartbeat?.base_mode & MAV_MODE_FLAG_SAFETY_ARMED),
   )
 
-export const makeGetFlightMode = (droneSysId: number) =>
+export const makeGetFlightMode = (vehicleSysId: number) =>
   createSelector(
-    [(state: RootState) => state.drones.heartbeatData[droneSysId]],
+    [(state: RootState) => state.vehicles.heartbeatData[vehicleSysId]],
     (heartbeat) => heartbeat?.custom_mode,
   )
 
-export const makeGetVfrHudData = (droneSysId: number) => (state: RootState) =>
-  state.drones.vfrHudData[droneSysId]
+export const makeGetVfrHudData = (vehicleSysId: number) => (state: RootState) =>
+  state.vehicles.vfrHudData[vehicleSysId]
 
 export const makeGetGlobalPositionIntData =
-  (droneSysId: number) => (state: RootState) =>
-    state.drones.globalPositionIntData[droneSysId]
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.globalPositionIntData[vehicleSysId]
 
-export const makeGetAttitudeData = (droneSysId: number) => (state: RootState) =>
-  state.drones.attitudeData[droneSysId]
+export const makeGetAttitudeData =
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.attitudeData[vehicleSysId]
 
 export const makeGetBatteryStatusData =
-  (droneSysId: number) => (state: RootState) =>
-    state.drones.batteryStatusData[droneSysId]
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.batteryStatusData[vehicleSysId]
 
-export default dronesSlice
+export default vehiclesSlice

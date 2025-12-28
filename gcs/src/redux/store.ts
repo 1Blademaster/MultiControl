@@ -7,11 +7,11 @@ import connectionSlice, {
   setPort,
   setSelectedComPort,
 } from "./slices/connectionSlice"
-import dronesSlice from "./slices/dronesSlice"
 import socketSlice from "./slices/socketSlice"
+import vehiclesSlice from "./slices/vehiclesSlice"
 import socketMiddleware from "./socketMiddleware"
 
-const rootReducer = combineSlices(socketSlice, connectionSlice, dronesSlice)
+const rootReducer = combineSlices(socketSlice, connectionSlice, vehiclesSlice)
 
 export const store = configureStore({
   reducer: rootReducer,

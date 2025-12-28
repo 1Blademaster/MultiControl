@@ -12,7 +12,7 @@ import {
 } from "../redux/slices/vehiclesSlice"
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
 
-export default function DroneCard({
+export default function VehicleCard({
   sysId,
   color,
 }: {
@@ -42,7 +42,7 @@ export default function DroneCard({
     <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
       <div className="flex flex-row gap-6 items-center">
         <Text fw={700} c={color} size="xl">
-          Drone {sysId}
+          Vehicle {sysId}
         </Text>
         <Text fw={700} size="xl" c={isArmed ? "red" : ""}>
           {isArmed ? "ARMED" : "DISARMED"}

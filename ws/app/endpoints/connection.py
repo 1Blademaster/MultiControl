@@ -97,13 +97,13 @@ def connect_to_radio_link(connection_settings: ConnectionSettings) -> None:
         return
 
     state.radio_link = radio_link
-    drones_connected_to = radio_link.get_drones()
+    vehicles_connected_to = radio_link.get_vehicles()
     socketio.emit(
         "connect_to_radio_link_result",
         {
             "success": True,
-            "message": f"Connected to {len(drones_connected_to)} drones via radio link",
-            "data": {"drones": drones_connected_to},
+            "message": f"Connected to {len(vehicles_connected_to)} vehicles via radio link",
+            "data": {"vehicles": vehicles_connected_to},
         },
     )
 
