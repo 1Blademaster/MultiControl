@@ -8,7 +8,11 @@ import {
   setConnectingToRadioLink,
   setFetchingComPorts,
 } from "./slices/connectionSlice"
-import { emitArmVehicle, emitDisarmVehicle } from "./slices/vehiclesSlice"
+import {
+  emitArmVehicle,
+  emitDisarmVehicle,
+  emitSetVehicleFlightMode,
+} from "./slices/vehiclesSlice"
 
 export function handleEmitters(
   socket: SocketConnection,
@@ -52,6 +56,12 @@ export function handleEmitters(
       emitter: emitDisarmVehicle,
       callback: () => {
         socket.socket.emit("disarm_vehicle", action.payload)
+      },
+    },
+    {
+      emitter: emitSetVehicleFlightMode,
+      callback: () => {
+        socket.socket.emit("set_vehicle_flight_mode", action.payload)
       },
     },
   ]

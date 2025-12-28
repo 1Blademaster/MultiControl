@@ -1,10 +1,10 @@
 import { Button, Text } from "@mantine/core"
-import { CopterMode } from "mavlink-mappings/dist/lib/ardupilotmega"
 import { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   emitArmVehicle,
   emitDisarmVehicle,
+  emitSetVehicleFlightMode,
   makeGetBatteryStatusData,
   makeGetFlightMode,
   makeGetGlobalPositionIntData,
@@ -13,6 +13,7 @@ import {
   VehicleType,
 } from "../redux/slices/vehiclesSlice"
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
+import { getFlightModesMap } from "../utils/mavlinkUtils"
 
 export default function VehicleCard({
   sysId,
@@ -35,6 +36,10 @@ export default function VehicleCard({
     () => makeGetBatteryStatusData(sysId),
     [sysId],
   )
+  const flightModesMap = useMemo<Record<number, string>>(
+    () => getFlightModesMap(vehicleType),
+    [vehicleType],
+  )
 
   const isArmed = useSelector(selectIsArmed)
   const flightMode = useSelector(selectFlightMode)
@@ -50,6 +55,21 @@ export default function VehicleCard({
     }
   }
 
+  function handleSetFlightMode(newFlightMode: string) {
+    const newFlightModeNumber = Object.entries(flightModesMap).find(
+      ([, value]) => value === newFlightMode,
+    )?.[0]
+
+    if (newFlightModeNumber !== undefined) {
+      dispatch(
+        emitSetVehicleFlightMode({
+          system_id: sysId,
+          flight_mode: Number(newFlightModeNumber),
+        }),
+      )
+    }
+  }
+
   return (
     <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
       <div className="flex flex-row gap-6 items-center">
@@ -59,7 +79,7 @@ export default function VehicleCard({
         <Text fw={700} size="xl" c={isArmed ? "red" : ""}>
           {isArmed ? "ARMED" : "DISARMED"}
         </Text>
-        <Text size="xl">{CopterMode[flightMode]}</Text>
+        <Text size="xl">{flightModesMap[flightMode]}</Text>
         <Text size="xl">{vehicleType}</Text>
       </div>
       <div className="flex flex-row gap-6">
@@ -88,13 +108,28 @@ export default function VehicleCard({
         >
           {isArmed ? "DISARM" : "ARM"}
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() => handleSetFlightMode("GUIDED")}
+        >
           GUIDED
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() => handleSetFlightMode("AUTO")}
+        >
           AUTO
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() => handleSetFlightMode("RTL")}
+        >
           RTL
         </Button>
       </div>

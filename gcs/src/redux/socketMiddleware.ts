@@ -46,6 +46,7 @@ const TelemetryEvents = Object.freeze({
 const ActionEvents = Object.freeze({
   onArmVehicleResult: "arm_vehicle_result",
   onDisarmVehicleResult: "disarm_vehicle_result",
+  onSetVehicleFlightModeResult: "set_vehicle_flight_mode_result",
 })
 
 const socketMiddleware: Middleware = (store) => {
@@ -57,6 +58,7 @@ const socketMiddleware: Middleware = (store) => {
       if (!socket && typeof window !== "undefined") {
         socket = SocketFactory.create()
         const currentSocket = socket
+        store.dispatch(setConnectedToRadioLink(false))
 
         currentSocket.socket.on(SocketEvents.Connect, () => {
           console.log(`Connected to socket ${currentSocket.socket.id}`)
@@ -211,6 +213,13 @@ const socketMiddleware: Middleware = (store) => {
           }
         })
         socket.socket.on(ActionEvents.onDisarmVehicleResult, (msg) => {
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+          } else {
+            showErrorNotification(msg.message)
+          }
+        })
+        socket.socket.on(ActionEvents.onSetVehicleFlightModeResult, (msg) => {
           if (msg.success) {
             showSuccessNotification(msg.message)
           } else {

@@ -333,6 +333,14 @@ class RadioLink:
             }
 
         try:
+            target_vehicle = self.vehicles[system_id]
+
+            if target_vehicle is None:
+                return {
+                    "success": False,
+                    "message": "Vehicle not found",
+                }
+
             self.send_command_to_vehicle(
                 system_id,
                 mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
@@ -377,6 +385,14 @@ class RadioLink:
             }
 
         try:
+            target_vehicle = self.vehicles[system_id]
+
+            if target_vehicle is None:
+                return {
+                    "success": False,
+                    "message": "Vehicle not found",
+                }
+
             self.send_command_to_vehicle(
                 system_id,
                 mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
@@ -410,6 +426,73 @@ class RadioLink:
         except Exception as e:
             self.logger.error(e, exc_info=True)
             return {"success": False, "message": "Could not disarm, serial exception"}
+        finally:
+            self.release_message_type("COMMAND_ACK", self.controller_id)
+
+    def set_vehicle_flight_mode(self, system_id: int, new_flight_mode: int) -> Response:
+        if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
+            return {
+                "success": False,
+                "message": "Could not reserve COMMAND_ACK messages",
+            }
+
+        try:
+            target_vehicle = self.vehicles[system_id]
+
+            if target_vehicle is None:
+                return {
+                    "success": False,
+                    "message": "Vehicle not found",
+                }
+
+            flight_mode_map = target_vehicle.flight_mode_map
+            if new_flight_mode not in flight_mode_map:
+                return {
+                    "success": False,
+                    "message": "Invalid flight mode",
+                }
+
+            new_flight_mode_string = flight_mode_map[new_flight_mode]
+
+            self.send_command_to_vehicle(
+                system_id,
+                mavlink.MAV_CMD_DO_SET_MODE,
+                param1=1,
+                param2=new_flight_mode,
+            )
+
+            response = self.wait_for_message(
+                "COMMAND_ACK",
+                self.controller_id,
+                conditional_func=lambda msg: (msg.get_srcSystem() == system_id)
+                and (msg.command == mavutil.mavlink.MAV_CMD_DO_SET_MODE),
+            )
+
+            if command_accepted(
+                response, mavutil.mavlink.MAV_CMD_DO_SET_MODE, self.logger
+            ):
+                self.logger.debug(
+                    f"[{system_id}] Flight mode set to {new_flight_mode_string}"
+                )
+                return {
+                    "success": True,
+                    "message": f"Flight mode set successfully to {new_flight_mode_string}",
+                }
+            else:
+                self.logger.debug(
+                    f"[{system_id}] Could not set flight mode to {new_flight_mode_string}"
+                )
+                return {
+                    "success": False,
+                    "message": f"Could not set flight mode to {new_flight_mode_string}, command not accepted",
+                }
+
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {
+                "success": False,
+                "message": "Could not set flight mode, serial exception",
+            }
         finally:
             self.release_message_type("COMMAND_ACK", self.controller_id)
 

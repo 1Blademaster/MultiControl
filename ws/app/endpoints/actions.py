@@ -13,6 +13,11 @@ class ArmDisarmSettings(TypedDict):
     force: bool
 
 
+class SetFlightModeSettings(TypedDict):
+    system_id: int
+    flight_mode: int
+
+
 @socketio.on("arm_vehicle")
 def arm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     if state.radio_link is None:
@@ -59,3 +64,50 @@ def disarm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     disarm_result = state.radio_link.disarm_vehicle(system_id, force)
 
     socketio.emit("disarm_vehicle_result", disarm_result)
+
+
+@socketio.on("set_vehicle_flight_mode")
+def set_vehicle_flight_mode(flight_mode_settings: SetFlightModeSettings) -> None:
+    if state.radio_link is None:
+        logger.warning("Not connected to radio link, cannot set vehicle flight mode")
+        return
+
+    system_id = flight_mode_settings.get("system_id")
+    if system_id is None:
+        socketio.emit(
+            "set_vehicle_flight_mode_result",
+            {
+                "success": False,
+                "message": "No system ID specified while trying to set vehicle flight mode",
+            },
+        )
+        return
+
+    flight_mode = flight_mode_settings.get("flight_mode", None)
+    if flight_mode is None:
+        socketio.emit(
+            "set_vehicle_flight_mode_result",
+            {
+                "success": False,
+                "message": "No flight mode specified while trying to set vehicle flight mode",
+            },
+        )
+        return
+
+    try:
+        flight_mode = int(flight_mode)
+    except ValueError:
+        socketio.emit(
+            "set_vehicle_flight_mode_result",
+            {
+                "success": False,
+                "message": "Invalid flight mode specified while trying to set vehicle flight mode",
+            },
+        )
+        return
+
+    set_flight_mode_result = state.radio_link.set_vehicle_flight_mode(
+        system_id, flight_mode
+    )
+
+    socketio.emit("set_vehicle_flight_mode_result", set_flight_mode_result)

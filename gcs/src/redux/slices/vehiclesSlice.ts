@@ -58,6 +58,11 @@ interface ArmDisarmVehiclePayload {
   force: boolean
 }
 
+interface SetFlightModePayload {
+  system_id: number
+  flight_mode: number
+}
+
 const initialState = {
   vehicleSysIds: [] as number[],
   vehicleTypes: {} as { [key: number]: VehicleType },
@@ -162,6 +167,10 @@ const vehiclesSlice = createSlice({
       _state,
       _action: PayloadAction<ArmDisarmVehiclePayload>,
     ) => {},
+    emitSetVehicleFlightMode: (
+      _state,
+      _action: PayloadAction<SetFlightModePayload>,
+    ) => {},
   },
   selectors: {
     selectVehicleSysIds: (state) => state.vehicleSysIds,
@@ -183,6 +192,7 @@ export const {
 
   emitArmVehicle,
   emitDisarmVehicle,
+  emitSetVehicleFlightMode,
 } = vehiclesSlice.actions
 export const { selectVehicleSysIds, selectVehicleTypes, selectVehicleColors } =
   vehiclesSlice.selectors
