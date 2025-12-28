@@ -65,9 +65,9 @@ def get_vehicle_type_from_heartbeat(
         mavlink.MAV_TYPE_SUBMARINE,
     ]:
         return VehicleType.SUB
-    elif mav_type in [
-        mavlink.MAV_TYPE_AIRSHIP,
-    ]:
-        return VehicleType.BLIMP
+    # elif mav_type in [
+    #     mavlink.MAV_TYPE_AIRSHIP,
+    # ]:
+    #     return VehicleType.BLIMP
 
     return VehicleType.UNKNOWN

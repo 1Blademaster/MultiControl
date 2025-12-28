@@ -18,4 +18,4 @@ class VehicleType(Enum):
     BOAT = "boat"
     TRACKER = "tracker"
     SUB = "sub"
-    BLIMP = "blimp"
+    # BLIMP = "blimp"
