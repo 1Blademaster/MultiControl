@@ -369,6 +369,50 @@ class RadioLink:
         finally:
             self.release_message_type("COMMAND_ACK", self.controller_id)
 
+    def disarm_vehicle(self, system_id: int, force: bool = False) -> Response:
+        if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
+            return {
+                "success": False,
+                "message": "Could not reserve COMMAND_ACK messages",
+            }
+
+        try:
+            self.send_command_to_vehicle(
+                system_id,
+                mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                param1=0,  # 0=disarm, 1=arm
+                param2=21196 if force else 0,  # force arm/disarm
+            )
+
+            response = self.wait_for_message(
+                "COMMAND_ACK",
+                self.controller_id,
+                conditional_func=lambda msg: (msg.get_srcSystem() == system_id)
+                and (msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM),
+            )
+
+            if command_accepted(
+                response, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, self.logger
+            ):
+                # Wait for the vehicle to be disarmed fully after the command has been accepted
+                self.logger.debug(f"[{system_id}] Waiting for disarm")
+                while self.vehicles[system_id].armed:
+                    time.sleep(0.05)
+                self.logger.debug(f"[{system_id}] DISARMED")
+                return {"success": True, "message": "Disarmed successfully"}
+            else:
+                self.logger.debug(f"[{system_id}] Disarming failed")
+                return {
+                    "success": False,
+                    "message": "Could not disarm, command not accepted",
+                }
+
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {"success": False, "message": "Could not disarm, serial exception"}
+        finally:
+            self.release_message_type("COMMAND_ACK", self.controller_id)
+
     def close(self) -> None:
         self.clear_message_listeners()
         self.is_active.clear()

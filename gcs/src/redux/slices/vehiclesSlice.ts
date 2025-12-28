@@ -42,7 +42,7 @@ type BatteryStatusDataRecord = {
   battery_remaining: number
 }
 
-interface ArmVehiclePayload {
+interface ArmDisarmVehiclePayload {
   system_id: number
   force: boolean
 }
@@ -131,7 +131,14 @@ const vehiclesSlice = createSlice({
       state.batteryStatusData[data.system_id] = data
     },
 
-    emitArmVehicle: (_state, _action: PayloadAction<ArmVehiclePayload>) => {},
+    emitArmVehicle: (
+      _state,
+      _action: PayloadAction<ArmDisarmVehiclePayload>,
+    ) => {},
+    emitDisarmVehicle: (
+      _state,
+      _action: PayloadAction<ArmDisarmVehiclePayload>,
+    ) => {},
   },
   selectors: {
     selectVehicleSysIds: (state) => state.vehicleSysIds,
@@ -151,6 +158,7 @@ export const {
   updateBatteryStatusData,
 
   emitArmVehicle,
+  emitDisarmVehicle,
 } = vehiclesSlice.actions
 export const { selectVehicleSysIds, selectVehicleColors } =
   vehiclesSlice.selectors

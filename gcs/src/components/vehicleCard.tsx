@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   emitArmVehicle,
+  emitDisarmVehicle,
   makeGetBatteryStatusData,
   makeGetFlightMode,
   makeGetGlobalPositionIntData,
@@ -38,6 +39,14 @@ export default function VehicleCard({
   const globalPositionIntData = useSelector(selectGlobalPositionIntData)
   const batteryStatusData = useSelector(selectBatteryStatusData)
 
+  function handleArmDisarm() {
+    if (isArmed) {
+      dispatch(emitDisarmVehicle({ system_id: sysId, force: false }))
+    } else {
+      dispatch(emitArmVehicle({ system_id: sysId, force: false }))
+    }
+  }
+
   return (
     <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
       <div className="flex flex-row gap-6 items-center">
@@ -71,9 +80,7 @@ export default function VehicleCard({
           color="red"
           radius={0}
           size="compact-md"
-          onClick={() =>
-            dispatch(emitArmVehicle({ system_id: sysId, force: false }))
-          }
+          onClick={handleArmDisarm}
         >
           {isArmed ? "DISARM" : "ARM"}
         </Button>

@@ -44,6 +44,7 @@ const TelemetryEvents = Object.freeze({
 
 const ActionEvents = Object.freeze({
   onArmVehicleResult: "arm_vehicle_result",
+  onDisarmVehicleResult: "disarm_vehicle_result",
 })
 
 const socketMiddleware: Middleware = (store) => {
@@ -196,7 +197,13 @@ const socketMiddleware: Middleware = (store) => {
         })
 
         socket.socket.on(ActionEvents.onArmVehicleResult, (msg) => {
-          console.log(msg)
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+          } else {
+            showErrorNotification(msg.message)
+          }
+        })
+        socket.socket.on(ActionEvents.onDisarmVehicleResult, (msg) => {
           if (msg.success) {
             showSuccessNotification(msg.message)
           } else {
