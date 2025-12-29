@@ -30,9 +30,6 @@ export default function ControlBar() {
         >
           DISARM
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
-          Takeoff
-        </Button>
         <Button
           variant="light"
           radius={0}
