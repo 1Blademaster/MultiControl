@@ -47,7 +47,9 @@ const TelemetryEvents = Object.freeze({
 
 const ActionEvents = Object.freeze({
   onArmVehicleResult: "arm_vehicle_result",
+  onArmAllVehiclesResult: "arm_all_vehicles_result",
   onDisarmVehicleResult: "disarm_vehicle_result",
+  onDisarmAllVehiclesResult: "disarm_all_vehicles_result",
   onSetVehicleFlightModeResult: "set_vehicle_flight_mode_result",
 })
 
@@ -70,7 +72,7 @@ const socketMiddleware: Middleware = (store) => {
         })
 
         currentSocket.socket.on(SocketEvents.Disconnect, () => {
-          console.log(`Disconnected from socket ${currentSocket.socket.id}`)
+          console.log("Disconnected from socket")
           store.dispatch(socketDisconnected())
           store.dispatch(setConnectedToRadioLink(false))
         })
@@ -226,7 +228,21 @@ const socketMiddleware: Middleware = (store) => {
             showErrorNotification(msg.message)
           }
         })
+        socket.socket.on(ActionEvents.onArmAllVehiclesResult, (msg) => {
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+          } else {
+            showErrorNotification(msg.message)
+          }
+        })
         socket.socket.on(ActionEvents.onDisarmVehicleResult, (msg) => {
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+          } else {
+            showErrorNotification(msg.message)
+          }
+        })
+        socket.socket.on(ActionEvents.onDisarmAllVehiclesResult, (msg) => {
           if (msg.success) {
             showSuccessNotification(msg.message)
           } else {

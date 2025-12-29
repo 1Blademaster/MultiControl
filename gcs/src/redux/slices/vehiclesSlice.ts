@@ -65,6 +65,10 @@ interface ArmDisarmVehiclePayload {
   force: boolean
 }
 
+interface ArmDisarmAllVehiclesPayload {
+  force: boolean
+}
+
 interface SetFlightModePayload {
   system_id: number
   flight_mode: number
@@ -181,9 +185,17 @@ const vehiclesSlice = createSlice({
       _state,
       _action: PayloadAction<ArmDisarmVehiclePayload>,
     ) => {},
+    emitArmAllVehicles: (
+      _state,
+      _action: PayloadAction<ArmDisarmAllVehiclesPayload>,
+    ) => {},
     emitDisarmVehicle: (
       _state,
       _action: PayloadAction<ArmDisarmVehiclePayload>,
+    ) => {},
+    emitDisarmAllVehicles: (
+      _state,
+      _action: PayloadAction<ArmDisarmAllVehiclesPayload>,
     ) => {},
     emitSetVehicleFlightMode: (
       _state,
@@ -212,7 +224,9 @@ export const {
   updateBatteryStatusData,
 
   emitArmVehicle,
+  emitArmAllVehicles,
   emitDisarmVehicle,
+  emitDisarmAllVehicles,
   emitSetVehicleFlightMode,
 } = vehiclesSlice.actions
 export const {

@@ -377,6 +377,61 @@ class RadioLink:
         finally:
             self.release_message_type("COMMAND_ACK", self.controller_id)
 
+    def arm_all_vehicles(self, force: bool = False) -> Response:
+        if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
+            return {
+                "success": False,
+                "message": "Could not reserve COMMAND_ACK messages",
+            }
+
+        try:
+            accepted_response_system_ids = []
+
+            # Send arm command to each vehicle individually
+            for system_id in self.vehicles.keys():
+                self.send_command_to_vehicle(
+                    system_id,
+                    mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    param1=1,  # 0=disarm, 1=arm
+                    param2=21196 if force else 0,  # force arm/disarm
+                )
+
+                response = self.wait_for_message(
+                    "COMMAND_ACK",
+                    self.controller_id,
+                    conditional_func=lambda msg: (msg.get_srcSystem() == system_id)
+                    and (msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM),
+                )
+
+                if command_accepted(
+                    response, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, self.logger
+                ):
+                    self.logger.debug(f"[{system_id}] ARMED")
+                    accepted_response_system_ids.append(system_id)
+
+                else:
+                    self.logger.debug(
+                        f"[{system_id}] Arming failed, command not accepted"
+                    )
+            if len(accepted_response_system_ids) == len(self.vehicles):
+                return {
+                    "success": True,
+                    "message": "Armed all vehicles successfully",
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Could not arm all vehicles, only {len(accepted_response_system_ids)} out of {len(self.vehicles)} vehicles armed",
+                }
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {
+                "success": False,
+                "message": "Could not arm all vehicles, serial exception",
+            }
+        finally:
+            self.release_message_type("COMMAND_ACK", self.controller_id)
+
     def disarm_vehicle(self, system_id: int, force: bool = False) -> Response:
         if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
             return {
@@ -426,6 +481,61 @@ class RadioLink:
         except Exception as e:
             self.logger.error(e, exc_info=True)
             return {"success": False, "message": "Could not disarm, serial exception"}
+        finally:
+            self.release_message_type("COMMAND_ACK", self.controller_id)
+
+    def disarm_all_vehicles(self, force: bool = False) -> Response:
+        if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
+            return {
+                "success": False,
+                "message": "Could not reserve COMMAND_ACK messages",
+            }
+
+        try:
+            accepted_response_system_ids = []
+
+            # Send disarm command to each vehicle individually
+            for system_id in self.vehicles.keys():
+                self.send_command_to_vehicle(
+                    system_id,
+                    mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    param1=0,  # 0=disarm, 1=arm
+                    param2=21196 if force else 0,  # force arm/disarm
+                )
+
+                response = self.wait_for_message(
+                    "COMMAND_ACK",
+                    self.controller_id,
+                    conditional_func=lambda msg: (msg.get_srcSystem() == system_id)
+                    and (msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM),
+                )
+
+                if command_accepted(
+                    response, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, self.logger
+                ):
+                    self.logger.debug(f"[{system_id}] DISARMED")
+                    accepted_response_system_ids.append(system_id)
+
+                else:
+                    self.logger.debug(
+                        f"[{system_id}] Disarming failed, command not accepted"
+                    )
+            if len(accepted_response_system_ids) == len(self.vehicles):
+                return {
+                    "success": True,
+                    "message": "Disarmed all vehicles successfully",
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Could not disarm all vehicles, only {len(accepted_response_system_ids)} out of {len(self.vehicles)} vehicles disarmed",
+                }
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {
+                "success": False,
+                "message": "Could not disarm all vehicles, serial exception",
+            }
         finally:
             self.release_message_type("COMMAND_ACK", self.controller_id)
 

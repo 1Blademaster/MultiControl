@@ -9,7 +9,9 @@ import {
   setFetchingComPorts,
 } from "./slices/connectionSlice"
 import {
+  emitArmAllVehicles,
   emitArmVehicle,
+  emitDisarmAllVehicles,
   emitDisarmVehicle,
   emitSetVehicleFlightMode,
 } from "./slices/vehiclesSlice"
@@ -53,9 +55,21 @@ export function handleEmitters(
       },
     },
     {
+      emitter: emitArmAllVehicles,
+      callback: () => {
+        socket.socket.emit("arm_all_vehicles", action.payload)
+      },
+    },
+    {
       emitter: emitDisarmVehicle,
       callback: () => {
         socket.socket.emit("disarm_vehicle", action.payload)
+      },
+    },
+    {
+      emitter: emitDisarmAllVehicles,
+      callback: () => {
+        socket.socket.emit("disarm_all_vehicles", action.payload)
       },
     },
     {

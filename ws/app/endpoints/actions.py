@@ -42,6 +42,19 @@ def arm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     socketio.emit("arm_vehicle_result", arm_result)
 
 
+@socketio.on("arm_all_vehicles")
+def arm_all_vehicles(arm_settings: ArmDisarmSettings) -> None:
+    if state.radio_link is None:
+        logger.warning("Not connected to radio link, cannot arm vehicles")
+        return
+
+    force = arm_settings.get("force", False)
+
+    arm_result = state.radio_link.arm_all_vehicles(force)
+
+    socketio.emit("arm_all_vehicles_result", arm_result)
+
+
 @socketio.on("disarm_vehicle")
 def disarm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     if state.radio_link is None:
@@ -64,6 +77,19 @@ def disarm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     disarm_result = state.radio_link.disarm_vehicle(system_id, force)
 
     socketio.emit("disarm_vehicle_result", disarm_result)
+
+
+@socketio.on("disarm_all_vehicles")
+def disarm_all_vehicles(arm_settings: ArmDisarmSettings) -> None:
+    if state.radio_link is None:
+        logger.warning("Not connected to radio link, cannot disarm vehicles")
+        return
+
+    force = arm_settings.get("force", False)
+
+    disarm_result = state.radio_link.disarm_all_vehicles(force)
+
+    socketio.emit("disarm_all_vehicles_result", disarm_result)
 
 
 @socketio.on("set_vehicle_flight_mode")
