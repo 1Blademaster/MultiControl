@@ -24,6 +24,7 @@ def setup_telemetry_listeners() -> bool:
         return False
 
     state.radio_link.add_message_listener("HEARTBEAT", send_message)
+    state.radio_link.add_message_listener("STATUSTEXT", send_message)
     state.radio_link.add_message_listener("VFR_HUD", send_message)
     state.radio_link.add_message_listener("GLOBAL_POSITION_INT", send_message)
     state.radio_link.add_message_listener("ATTITUDE", send_message)

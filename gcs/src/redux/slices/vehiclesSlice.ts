@@ -12,6 +12,13 @@ export enum VehicleType {
   BLIMP = "blimp",
 }
 
+export type StatusTextMessageRecord = {
+  system_id: number
+  text: string
+  severity: number
+  timestamp: number
+}
+
 type HeartbeatRecord = {
   system_id: number
   type: number
@@ -67,6 +74,7 @@ const initialState = {
   vehicleSysIds: [] as number[],
   vehicleTypes: {} as { [key: number]: VehicleType },
   vehicleColors: {} as { [key: number]: string },
+  statusTextMessages: [] as StatusTextMessageRecord[],
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
   globalPositionIntData: {} as { [key: number]: GlobalPositionIntRecord },
@@ -132,6 +140,16 @@ const vehiclesSlice = createSlice({
       delete state.vehicleColors[action.payload.system_id]
       delete state.vehicleTypes[action.payload.system_id]
     },
+    appendToStatusTextMessages: (
+      state,
+      action: PayloadAction<StatusTextMessageRecord>,
+    ) => {
+      // Add to start of array to show latest messages first
+      state.statusTextMessages.unshift(action.payload)
+    },
+    clearStatusTextMessages: (state) => {
+      state.statusTextMessages = []
+    },
     updateHeartbeatData: (state, action: PayloadAction<HeartbeatRecord>) => {
       const data = action.payload
       state.heartbeatData[data.system_id] = data
@@ -176,6 +194,7 @@ const vehiclesSlice = createSlice({
     selectVehicleSysIds: (state) => state.vehicleSysIds,
     selectVehicleTypes: (state) => state.vehicleTypes,
     selectVehicleColors: (state) => state.vehicleColors,
+    selectStatusTextMessages: (state) => state.statusTextMessages,
   },
 })
 
@@ -184,6 +203,8 @@ export const {
   addVehicle,
   removeVehicles,
   removeVehicle,
+  appendToStatusTextMessages,
+  clearStatusTextMessages,
   updateHeartbeatData,
   updateVfrHudData,
   updateGlobalPositionIntData,
@@ -194,8 +215,12 @@ export const {
   emitDisarmVehicle,
   emitSetVehicleFlightMode,
 } = vehiclesSlice.actions
-export const { selectVehicleSysIds, selectVehicleTypes, selectVehicleColors } =
-  vehiclesSlice.selectors
+export const {
+  selectVehicleSysIds,
+  selectVehicleTypes,
+  selectVehicleColors,
+  selectStatusTextMessages,
+} = vehiclesSlice.selectors
 
 // Memoized selector factories
 export const makeGetIsArmed = (vehicleSysId: number) =>

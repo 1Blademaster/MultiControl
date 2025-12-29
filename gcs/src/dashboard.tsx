@@ -3,6 +3,7 @@ import { MapRef } from "react-map-gl/maplibre"
 import ControlBar from "./components/controlBar"
 import MapSection from "./components/mapSection"
 import Navbar from "./components/navbar"
+import StatusTextMessagesContainer from "./components/statusTextMessagesContainer"
 import VehicleCardsContainer from "./components/vehicleCardsContainer"
 
 export default function Dashboard() {
@@ -18,6 +19,8 @@ export default function Dashboard() {
       <VehicleCardsContainer />
 
       <ControlBar />
+
+      <StatusTextMessagesContainer />
     </div>
   )
 }

@@ -23,6 +23,8 @@ import {
 } from "./slices/connectionSlice"
 import {
   addVehicles,
+  appendToStatusTextMessages,
+  clearStatusTextMessages,
   removeVehicles,
   updateAttitudeData,
   updateBatteryStatusData,
@@ -64,6 +66,7 @@ const socketMiddleware: Middleware = (store) => {
           console.log(`Connected to socket ${currentSocket.socket.id}`)
           store.dispatch(socketConnected())
           store.dispatch(emitIsConnectedToRadioLink())
+          store.dispatch(setConnectedToRadioLink(false))
         })
 
         currentSocket.socket.on(SocketEvents.Disconnect, () => {
@@ -80,6 +83,7 @@ const socketMiddleware: Middleware = (store) => {
             showSuccessNotification(msg.message)
 
             store.dispatch(removeVehicles())
+            store.dispatch(clearStatusTextMessages())
 
             if (msg.data && msg.data.vehicles) {
               store.dispatch(
@@ -152,6 +156,16 @@ const socketMiddleware: Middleware = (store) => {
                     base_mode: packet.base_mode,
                     custom_mode: packet.custom_mode,
                     system_status: packet.system_status,
+                  }),
+                )
+                break
+              case "STATUSTEXT":
+                store.dispatch(
+                  appendToStatusTextMessages({
+                    system_id: packet.system_id,
+                    text: packet.text,
+                    severity: packet.severity,
+                    timestamp: Date.now(),
                   }),
                 )
                 break
