@@ -243,6 +243,7 @@ const socketMiddleware: Middleware = (store) => {
       } else {
         // Turn off socket events
         Object.values(TelemetryEvents).map((event) => socket?.socket.off(event))
+        Object.values(ActionEvents).map((event) => socket?.socket.off(event))
       }
     }
 

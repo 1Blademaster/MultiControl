@@ -14,6 +14,7 @@ import {
 } from "../redux/slices/vehiclesSlice"
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
 import { getFlightModesMap } from "../utils/mavlinkUtils"
+import NewFlightModeSelect from "./newFlightModeSelect"
 
 export default function VehicleCard({
   sysId,
@@ -98,7 +99,7 @@ export default function VehicleCard({
           </Text>
         </div>
       </div>
-      <div className="w-full flex flex-row gap-2">
+      <div className="w-full flex flex-row flex-wrap gap-2">
         <Button
           variant="light"
           color="red"
@@ -132,6 +133,7 @@ export default function VehicleCard({
         >
           RTL
         </Button>
+        <NewFlightModeSelect sysId={sysId} vehicleType={vehicleType} />
       </div>
     </div>
   )
