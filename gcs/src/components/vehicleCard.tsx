@@ -15,6 +15,7 @@ import {
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
 import { getFlightModesMap } from "../utils/mavlinkUtils"
 import NewFlightModeSelect from "./newFlightModeSelect"
+import VehicleIcon from "./vehicleIcon"
 
 export default function VehicleCard({
   sysId,
@@ -74,14 +75,16 @@ export default function VehicleCard({
   return (
     <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
       <div className="flex flex-row gap-6 items-center">
-        <Text fw={700} c={color} size="xl">
-          Vehicle {sysId}
-        </Text>
+        <div className="flex flex-row gap-1 items-center">
+          <Text fw={700} c={color} size="xl">
+            Vehicle {sysId}
+          </Text>
+          <VehicleIcon vehicleType={vehicleType} color={color} />
+        </div>
         <Text fw={700} size="xl" c={isArmed ? "red" : ""}>
           {isArmed ? "ARMED" : "DISARMED"}
         </Text>
         <Text size="xl">{flightModesMap[flightMode]}</Text>
-        <Text size="xl">{vehicleType}</Text>
       </div>
       <div className="flex flex-row gap-6">
         <div className="flex flex-col">
