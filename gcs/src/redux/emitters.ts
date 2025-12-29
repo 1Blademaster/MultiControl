@@ -13,6 +13,7 @@ import {
   emitArmVehicle,
   emitDisarmAllVehicles,
   emitDisarmVehicle,
+  emitSetAllVehiclesFlightMode,
   emitSetVehicleFlightMode,
 } from "./slices/vehiclesSlice"
 
@@ -76,6 +77,12 @@ export function handleEmitters(
       emitter: emitSetVehicleFlightMode,
       callback: () => {
         socket.socket.emit("set_vehicle_flight_mode", action.payload)
+      },
+    },
+    {
+      emitter: emitSetAllVehiclesFlightMode,
+      callback: () => {
+        socket.socket.emit("set_all_vehicles_flight_mode", action.payload)
       },
     },
   ]

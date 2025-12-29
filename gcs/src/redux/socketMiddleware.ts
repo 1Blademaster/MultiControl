@@ -51,6 +51,7 @@ const ActionEvents = Object.freeze({
   onDisarmVehicleResult: "disarm_vehicle_result",
   onDisarmAllVehiclesResult: "disarm_all_vehicles_result",
   onSetVehicleFlightModeResult: "set_vehicle_flight_mode_result",
+  onSetAllVehiclesFlightModeResult: "set_all_vehicles_flight_mode_result",
 })
 
 const socketMiddleware: Middleware = (store) => {
@@ -256,6 +257,16 @@ const socketMiddleware: Middleware = (store) => {
             showErrorNotification(msg.message)
           }
         })
+        socket.socket.on(
+          ActionEvents.onSetAllVehiclesFlightModeResult,
+          (msg) => {
+            if (msg.success) {
+              showSuccessNotification(msg.message)
+            } else {
+              showErrorNotification(msg.message)
+            }
+          },
+        )
       } else {
         // Turn off socket events
         Object.values(TelemetryEvents).map((event) => socket?.socket.off(event))

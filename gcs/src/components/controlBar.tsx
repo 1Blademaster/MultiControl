@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux"
 import {
   emitArmAllVehicles,
   emitDisarmAllVehicles,
+  emitSetAllVehiclesFlightMode,
 } from "../redux/slices/vehiclesSlice"
 
 export default function ControlBar() {
@@ -32,13 +33,34 @@ export default function ControlBar() {
         <Button variant="light" radius={0} size="compact-md">
           Takeoff
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() =>
+            dispatch(emitSetAllVehiclesFlightMode({ flight_mode: "GUIDED" }))
+          }
+        >
           GUIDED
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() =>
+            dispatch(emitSetAllVehiclesFlightMode({ flight_mode: "AUTO" }))
+          }
+        >
           AUTO
         </Button>
-        <Button variant="light" radius={0} size="compact-md">
+        <Button
+          variant="light"
+          radius={0}
+          size="compact-md"
+          onClick={() =>
+            dispatch(emitSetAllVehiclesFlightMode({ flight_mode: "RTL" }))
+          }
+        >
           RTL
         </Button>
       </div>
