@@ -60,6 +60,40 @@ type BatteryStatusDataRecord = {
   battery_remaining: number
 }
 
+interface SystemStatusDataRecord {
+  system_id: number
+  onboard_control_sensors_enabled: number
+  onboard_control_sensors_health: number
+}
+
+interface GpsRawIntDataRecord {
+  system_id: number
+  fix_type: number
+  eph: number
+  epv: number
+  satellites_visible: number
+}
+
+interface VibrationDataRecord {
+  system_id: number
+  vibration_x: number
+  vibration_y: number
+  vibration_z: number
+  clipping_0: number
+  clipping_1: number
+  clipping_2: number
+}
+
+interface EkfStatusReportDataRecord {
+  system_id: number
+  flags: number
+  velocity_variance: number
+  pos_horiz_variance: number
+  pos_vert_variance: number
+  compass_variance: number
+  terrain_alt_variance: number
+}
+
 interface ArmDisarmVehiclePayload {
   system_id: number
   force: boolean
@@ -88,6 +122,10 @@ const initialState = {
   globalPositionIntData: {} as { [key: number]: GlobalPositionIntRecord },
   attitudeData: {} as { [key: number]: AttitudeDataRecord },
   batteryStatusData: {} as { [key: number]: BatteryStatusDataRecord },
+  systemStatusData: {} as { [key: number]: SystemStatusDataRecord },
+  gpsRawIntData: {} as { [key: number]: GpsRawIntDataRecord },
+  vibrationData: {} as { [key: number]: VibrationDataRecord },
+  ekfStatusReportData: {} as { [key: number]: EkfStatusReportDataRecord },
 }
 
 const MAV_MODE_FLAG_SAFETY_ARMED = 128
@@ -184,6 +222,34 @@ const vehiclesSlice = createSlice({
       const data = action.payload
       state.batteryStatusData[data.system_id] = data
     },
+    updateSystemStatusData: (
+      state,
+      action: PayloadAction<SystemStatusDataRecord>,
+    ) => {
+      const data = action.payload
+      state.systemStatusData[data.system_id] = data
+    },
+    updateGpsRawIntData: (
+      state,
+      action: PayloadAction<GpsRawIntDataRecord>,
+    ) => {
+      const data = action.payload
+      state.gpsRawIntData[data.system_id] = data
+    },
+    updateVibrationData: (
+      state,
+      action: PayloadAction<VibrationDataRecord>,
+    ) => {
+      const data = action.payload
+      state.vibrationData[data.system_id] = data
+    },
+    updateEkfStatusReportData: (
+      state,
+      action: PayloadAction<EkfStatusReportDataRecord>,
+    ) => {
+      const data = action.payload
+      state.ekfStatusReportData[data.system_id] = data
+    },
 
     emitArmVehicle: (
       _state,
@@ -230,6 +296,10 @@ export const {
   updateGlobalPositionIntData,
   updateAttitudeData,
   updateBatteryStatusData,
+  updateSystemStatusData,
+  updateGpsRawIntData,
+  updateVibrationData,
+  updateEkfStatusReportData,
 
   emitArmVehicle,
   emitArmAllVehicles,
@@ -272,5 +342,21 @@ export const makeGetAttitudeData =
 export const makeGetBatteryStatusData =
   (vehicleSysId: number) => (state: RootState) =>
     state.vehicles.batteryStatusData[vehicleSysId]
+
+export const makeGetSystemStatusData =
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.systemStatusData[vehicleSysId]
+
+export const makeGetGpsRawIntData =
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.gpsRawIntData[vehicleSysId]
+
+export const makeGetVibrationData =
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.vibrationData[vehicleSysId]
+
+export const makeGetEkfStatusReportData =
+  (vehicleSysId: number) => (state: RootState) =>
+    state.vehicles.ekfStatusReportData[vehicleSysId]
 
 export default vehiclesSlice

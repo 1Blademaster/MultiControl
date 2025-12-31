@@ -15,6 +15,10 @@ import {
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
 import { getFlightModesMap } from "../utils/mavlinkUtils"
 import NewFlightModeSelect from "./newFlightModeSelect"
+import VehicleCardEkfStatus from "./vehicleCardEkfStatus"
+import VehicleCardGpsStatus from "./vehicleCardGpsStatus"
+import VehicleCardSensorStatus from "./vehicleCardSensorStatus"
+import VehicleCardVibrationStatus from "./vehicleCardVibrationStatus"
 import VehicleIcon from "./vehicleIcon"
 
 export default function VehicleCard({
@@ -101,6 +105,12 @@ export default function VehicleCard({
             BATT CURR: {formatNumber(caToA(batteryStatusData?.current))}
           </Text>
         </div>
+      </div>
+      <div className="flex flex-row gap-2">
+        <VehicleCardSensorStatus sysId={sysId} />
+        <VehicleCardGpsStatus sysId={sysId} />
+        <VehicleCardVibrationStatus sysId={sysId} />
+        <VehicleCardEkfStatus sysId={sysId} />
       </div>
       <div className="w-full flex flex-row flex-wrap gap-2">
         <Button

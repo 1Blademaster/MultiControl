@@ -28,9 +28,13 @@ import {
   removeVehicles,
   updateAttitudeData,
   updateBatteryStatusData,
+  updateEkfStatusReportData,
   updateGlobalPositionIntData,
+  updateGpsRawIntData,
   updateHeartbeatData,
+  updateSystemStatusData,
   updateVfrHudData,
+  updateVibrationData,
   VehicleType,
 } from "./slices/vehiclesSlice"
 
@@ -213,6 +217,54 @@ const socketMiddleware: Middleware = (store) => {
                     current: packet.current,
                     current_consumed: packet.current_consumed,
                     battery_remaining: packet.battery_remaining,
+                  }),
+                )
+                break
+              case "SYS_STATUS":
+                store.dispatch(
+                  updateSystemStatusData({
+                    system_id: packet.system_id,
+                    onboard_control_sensors_enabled:
+                      packet.onboard_control_sensors_enabled,
+                    onboard_control_sensors_health:
+                      packet.onboard_control_sensors_health,
+                  }),
+                )
+                break
+              case "GPS_RAW_INT":
+                store.dispatch(
+                  updateGpsRawIntData({
+                    system_id: packet.system_id,
+                    fix_type: packet.fix_type,
+                    eph: packet.eph,
+                    epv: packet.epv,
+                    satellites_visible: packet.satellites_visible,
+                  }),
+                )
+                break
+              case "VIBRATION":
+                store.dispatch(
+                  updateVibrationData({
+                    system_id: packet.system_id,
+                    vibration_x: packet.vibration_x,
+                    vibration_y: packet.vibration_y,
+                    vibration_z: packet.vibration_z,
+                    clipping_0: packet.clipping_0,
+                    clipping_1: packet.clipping_1,
+                    clipping_2: packet.clipping_2,
+                  }),
+                )
+                break
+              case "EKF_STATUS_REPORT":
+                store.dispatch(
+                  updateEkfStatusReportData({
+                    system_id: packet.system_id,
+                    flags: packet.flags,
+                    velocity_variance: packet.velocity_variance,
+                    pos_horiz_variance: packet.pos_horiz_variance,
+                    pos_vert_variance: packet.pos_vert_variance,
+                    compass_variance: packet.compass_variance,
+                    terrain_alt_variance: packet.terrain_alt_variance,
                   }),
                 )
                 break

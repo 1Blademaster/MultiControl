@@ -29,6 +29,10 @@ def setup_telemetry_listeners() -> bool:
     state.radio_link.add_message_listener("GLOBAL_POSITION_INT", send_message)
     state.radio_link.add_message_listener("ATTITUDE", send_message)
     state.radio_link.add_message_listener("BATTERY_STATUS", send_message)
+    state.radio_link.add_message_listener("SYS_STATUS", send_message)
+    state.radio_link.add_message_listener("GPS_RAW_INT", send_message)
+    state.radio_link.add_message_listener("VIBRATION", send_message)
+    state.radio_link.add_message_listener("EKF_STATUS_REPORT", send_message)
 
     logger.info("Telemetry listeners have been set up successfully")
 
