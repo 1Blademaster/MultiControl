@@ -39,14 +39,18 @@ class RadioLink:
             )
         except Exception:
             self.logger.exception(traceback.format_exc())
-            self.close()
+            if self.master:
+                self.master.close()
+            self.master = None
             return
 
         self.vehicles: Dict = {}
 
         if not self._listen_for_initial_heartbeats(5):
             self.logger.error("Failed to establish initial heartbeat")
-            self.close()
+            if self.master:
+                self.master.close()
+            self.master = None
             return
 
         self.message_listeners: Dict[str, Callable] = {}
