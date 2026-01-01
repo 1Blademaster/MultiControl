@@ -47,6 +47,11 @@ export default function StatusTextMessagesContainer() {
   return (
     <div className="absolute bottom-0 right-0 w-120 h-120 bg-zinc-800/80 flex flex-col gap-2 p-2">
       <ScrollArea ref={scrollAreaRef}>
+        {statusTextMessages.length === 0 && (
+          <Text ta="center" size="lg">
+            No messages
+          </Text>
+        )}
         {statusTextMessages.map((msg, idx) => (
           <div key={idx} className={`status-message ${msg.severity}`}>
             <Text size="lg" {...calculateStatusTextMessageProps(msg)}>
