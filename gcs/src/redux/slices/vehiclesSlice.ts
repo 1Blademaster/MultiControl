@@ -116,6 +116,7 @@ const initialState = {
   vehicleSysIds: [] as number[],
   vehicleTypes: {} as { [key: number]: VehicleType },
   vehicleColors: {} as { [key: number]: string },
+  hoveredVehicleId: null as number | null,
   statusTextMessages: [] as StatusTextMessageRecord[],
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
@@ -250,6 +251,9 @@ const vehiclesSlice = createSlice({
       const data = action.payload
       state.ekfStatusReportData[data.system_id] = data
     },
+    setHoveredVehicle: (state, action: PayloadAction<number | null>) => {
+      state.hoveredVehicleId = action.payload
+    },
 
     emitArmVehicle: (
       _state,
@@ -280,6 +284,7 @@ const vehiclesSlice = createSlice({
     selectVehicleSysIds: (state) => state.vehicleSysIds,
     selectVehicleTypes: (state) => state.vehicleTypes,
     selectVehicleColors: (state) => state.vehicleColors,
+    selectHoveredVehicleId: (state) => state.hoveredVehicleId,
     selectStatusTextMessages: (state) => state.statusTextMessages,
   },
 })
@@ -300,6 +305,7 @@ export const {
   updateGpsRawIntData,
   updateVibrationData,
   updateEkfStatusReportData,
+  setHoveredVehicle,
 
   emitArmVehicle,
   emitArmAllVehicles,
@@ -312,6 +318,7 @@ export const {
   selectVehicleSysIds,
   selectVehicleTypes,
   selectVehicleColors,
+  selectHoveredVehicleId,
   selectStatusTextMessages,
 } = vehiclesSlice.selectors
 

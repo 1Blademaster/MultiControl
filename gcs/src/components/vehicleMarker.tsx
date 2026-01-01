@@ -1,8 +1,12 @@
 import { Text } from "@mantine/core"
 import { useMemo } from "react"
 import { Marker } from "react-map-gl/maplibre"
-import { useSelector } from "react-redux"
-import { makeGetGlobalPositionIntData } from "../redux/slices/vehiclesSlice"
+import { useDispatch, useSelector } from "react-redux"
+import {
+  makeGetGlobalPositionIntData,
+  selectHoveredVehicleId,
+  setHoveredVehicle,
+} from "../redux/slices/vehiclesSlice"
 import { centiDegToDeg, intToCoord } from "../utils/dataFormatters"
 
 export default function VehicleMarker({
@@ -12,24 +16,32 @@ export default function VehicleMarker({
   sysId: number
   color: string
 }) {
+  const dispatch = useDispatch()
   const selectGlobalPositionIntData = useMemo(
     () => makeGetGlobalPositionIntData(sysId),
     [sysId],
   )
 
   const globalPositionIntData = useSelector(selectGlobalPositionIntData)
+  const hoveredVehicleId = useSelector(selectHoveredVehicleId)
 
   if (!globalPositionIntData) return null
 
-  const dropShadowString = `drop-shadow(0 0 1px black)`
+  const isCardHovered = hoveredVehicleId === sysId
+  const dropShadowString = isCardHovered
+    ? `drop-shadow(0 0 4px white)`
+    : `drop-shadow(0 0 1px black)`
 
   return (
-    <>
-      <Marker
-        latitude={intToCoord(globalPositionIntData.lat)}
-        longitude={intToCoord(globalPositionIntData.lon)}
-        scale={0.1}
-        className="cursor-pointer"
+    <Marker
+      latitude={intToCoord(globalPositionIntData.lat)}
+      longitude={intToCoord(globalPositionIntData.lon)}
+      scale={0.1}
+      className="cursor-pointer"
+    >
+      <div
+        onMouseEnter={() => dispatch(setHoveredVehicle(sysId))}
+        onMouseLeave={() => dispatch(setHoveredVehicle(null))}
       >
         <Text
           size="lg"
@@ -38,6 +50,7 @@ export default function VehicleMarker({
           style={{
             filter: dropShadowString,
             lineHeight: 1,
+            transition: "filter 0.2s ease",
           }}
         >
           {sysId}
@@ -53,6 +66,7 @@ export default function VehicleMarker({
           style={{
             transform: `rotate(${centiDegToDeg(globalPositionIntData.hdg)}deg)`,
             filter: dropShadowString,
+            transition: "filter 0.2s ease",
           }}
         >
           <path
@@ -60,7 +74,7 @@ export default function VehicleMarker({
             fill={color ?? "#FFFFFF"}
           />
         </svg>
-      </Marker>
-    </>
+      </div>
+    </Marker>
   )
 }

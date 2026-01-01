@@ -10,6 +10,8 @@ import {
   makeGetGlobalPositionIntData,
   makeGetIsArmed,
   makeGetVfrHudData,
+  selectHoveredVehicleId,
+  setHoveredVehicle,
   VehicleType,
 } from "../redux/slices/vehiclesSlice"
 import { caToA, formatNumber, mmToM, mvToV } from "../utils/dataFormatters"
@@ -52,6 +54,9 @@ export default function VehicleCard({
   const vfrHudData = useSelector(selectVfrHudData)
   const globalPositionIntData = useSelector(selectGlobalPositionIntData)
   const batteryStatusData = useSelector(selectBatteryStatusData)
+  const hoveredVehicleId = useSelector(selectHoveredVehicleId)
+
+  const isMarkerHovered = hoveredVehicleId === sysId
 
   function handleArmDisarm() {
     if (isArmed) {
@@ -77,7 +82,17 @@ export default function VehicleCard({
   }
 
   return (
-    <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
+    <div
+      className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-2"
+      style={{
+        border: isMarkerHovered
+          ? `2px solid ${color}`
+          : "2px solid transparent",
+        transition: "border 0.2s ease",
+      }}
+      onMouseEnter={() => dispatch(setHoveredVehicle(sysId))}
+      onMouseLeave={() => dispatch(setHoveredVehicle(null))}
+    >
       <div className="flex flex-row gap-6 items-center cursor-default">
         <div className="flex flex-row gap-1 items-center">
           <Text fw={700} c={color} size="xl">

@@ -17,7 +17,7 @@ export default function VehicleCardsContainer() {
       className="absolute top-14 left-0 p-2"
       style={{ height: "calc(100vh - 3.5rem)" }}
     >
-      <ScrollArea h="100%">
+      <ScrollArea h="100%" offsetScrollbars>
         <div className="flex flex-col gap-2">
           {vehicleSysIds.map((sysId) => (
             <VehicleCard
