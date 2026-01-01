@@ -62,37 +62,25 @@ export default function VehicleCardEkfStatus({ sysId }: { sysId: number }) {
       if (!activeFlags.includes("ATTITUDE")) {
         // If we have no attitude solution
         ekfCalculatedStatus = 1
-        details.push("No attitude solution")
+        details.push("⚠️ No attitude solution")
       } else if (!activeFlags.includes("VELOCITY_HORIZ")) {
         // If we have GPS but no horizontal velocity solution
         const gpsFixType = gpsRawIntData?.fix_type ?? 0
         if (gpsFixType > 0) {
           ekfCalculatedStatus = 1
-          details.push("No horizontal velocity solution")
+          details.push("⚠️ No horizontal velocity solution")
         }
       } else if (activeFlags.includes("CONST_POS_MODE")) {
         // EKF in constant position mode (not ideal)
-        details.push("Constant position mode")
+        details.push("⚠️ Constant position mode")
       }
 
-      if (ekfCalculatedStatus >= 0.5) {
-        // Add variance details if they contribute to high status
-        if (vel >= ekfCalculatedStatus * 0.5) {
-          details.push(`Velocity var: ${formatNumber(vel)}`)
-        }
-        if (comp >= ekfCalculatedStatus * 0.5) {
-          details.push(`Compass var: ${formatNumber(comp)}`)
-        }
-        if (posHor >= ekfCalculatedStatus * 0.5) {
-          details.push(`Horiz pos var: ${formatNumber(posHor)}`)
-        }
-        if (posVer >= ekfCalculatedStatus * 0.5) {
-          details.push(`Vert pos var: ${formatNumber(posVer)}`)
-        }
-        if (terAlt >= ekfCalculatedStatus * 0.5) {
-          details.push(`Terrain alt var: ${formatNumber(terAlt)}`)
-        }
-      }
+      // Always show all variance values
+      details.push(`Velocity variance: ${formatNumber(vel)}`)
+      details.push(`Compass variance: ${formatNumber(comp)}`)
+      details.push(`Horiz pos variance: ${formatNumber(posHor)}`)
+      details.push(`Vert pos variance: ${formatNumber(posVer)}`)
+      details.push(`Terrain alt variance: ${formatNumber(terAlt)}`)
 
       // Determine color based on calculated status (0-1 range)
       if (ekfCalculatedStatus >= 0.8) {
@@ -112,10 +100,9 @@ export default function VehicleCardEkfStatus({ sysId }: { sysId: number }) {
 
   return (
     <Tooltip
-      disabled={!statusData.details.length}
       label={
         <>
-          <Text>EKF Issues:</Text>
+          <Text>EKF Status:</Text>
           <List>
             {statusData.details.map((detail, index) => (
               <List.Item key={index}>{detail}</List.Item>
@@ -123,6 +110,8 @@ export default function VehicleCardEkfStatus({ sysId }: { sysId: number }) {
           </List>
         </>
       }
+      color="dark"
+      className="cursor-pointer"
     >
       <Text c={statusData.color} fw={statusData.color !== "green" ? 700 : 400}>
         EKF

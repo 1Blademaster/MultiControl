@@ -51,17 +51,24 @@ export default function VehicleCardSensorStatus({ sysId }: { sysId: number }) {
 
   return (
     <Tooltip
-      disabled={!statusData.details.length}
       label={
         <>
-          <Text>Unhealthy Sensors:</Text>
-          <List>
-            {statusData.details.map((detail, index) => (
-              <List.Item key={index}>{detail}</List.Item>
-            ))}
-          </List>
+          {statusData.details.length > 0 ? (
+            <>
+              <Text>Unhealthy Sensors:</Text>
+              <List>
+                {statusData.details.map((detail, index) => (
+                  <List.Item key={index}>{detail}</List.Item>
+                ))}
+              </List>
+            </>
+          ) : (
+            <Text>All sensors healthy</Text>
+          )}
         </>
       }
+      color="dark"
+      className="cursor-pointer"
     >
       <Text c={statusData.color} fw={!statusData.details.length ? 400 : 700}>
         SENSORS

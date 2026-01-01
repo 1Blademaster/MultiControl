@@ -30,34 +30,31 @@ export default function VehicleCardGpsStatus({ sysId }: { sysId: number }) {
       const fixType = gpsRawIntData.fix_type
       if (fixType === GpsFixType.NO_GPS || fixType === GpsFixType.NO_FIX) {
         updateColor("red")
-        details.push(`Fix type: ${GpsFixType[fixType]}`)
       } else if (fixType === GpsFixType.GPS_FIX_TYPE_2D_FIX) {
         updateColor("orange")
-        details.push(`Fix type: ${GpsFixType[fixType]}`)
       } else if (fixType >= GpsFixType.GPS_FIX_TYPE_3D_FIX) {
         updateColor("green")
       }
+      details.push(`Fix type: ${GpsFixType[fixType]}`)
 
-      if (gpsRawIntData.satellites_visible < 10) {
-        updateColor("orange")
-        details.push(`Sats visible: ${gpsRawIntData.satellites_visible}`)
-      }
-      if (gpsRawIntData.satellites_visible < 6) {
+      const satsVisible = gpsRawIntData.satellites_visible
+      if (satsVisible < 6) {
         updateColor("red")
-        details.push(`Sats visible: ${gpsRawIntData.satellites_visible}`)
+      } else if (satsVisible < 10) {
+        updateColor("orange")
       }
+      details.push(`Satellites visible: ${satsVisible}`)
 
       // HDOP
       const ephMeters = gpsRawIntData.eph / 100
       if (ephMeters > 2) {
         updateColor("red")
-        details.push(`HDOP: ${formatNumber(ephMeters)}m`)
       } else if (ephMeters > 1) {
         updateColor("orange")
-        details.push(`HDOP: ${formatNumber(ephMeters)}m`)
       } else {
         updateColor("green")
       }
+      details.push(`HDOP: ${formatNumber(ephMeters)}m`)
 
       return { color, details }
     }, [gpsRawIntData])
@@ -70,7 +67,7 @@ export default function VehicleCardGpsStatus({ sysId }: { sysId: number }) {
     <Tooltip
       label={
         <>
-          <Text>GPS Issues:</Text>
+          <Text>GPS Status:</Text>
           <List>
             {statusData.details.map((detail, index) => (
               <List.Item key={index}>{detail}</List.Item>
@@ -78,6 +75,8 @@ export default function VehicleCardGpsStatus({ sysId }: { sysId: number }) {
           </List>
         </>
       }
+      color="dark"
+      className="cursor-pointer"
     >
       <Text c={statusData.color} fw={statusData.color !== "green" ? 700 : 400}>
         GPS

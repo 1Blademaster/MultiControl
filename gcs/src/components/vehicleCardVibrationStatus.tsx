@@ -37,29 +37,26 @@ export default function VehicleCardVibrationStatus({
       const vibeX = vibrationData.vibration_x
       if (vibeX > VIBRATION_ERROR_THRESHOLD) {
         updateColor("red")
-        details.push(`Vibe X: ${formatNumber(vibeX)} m/s/s`)
       } else if (vibeX > VIBRATION_WARN_THRESHOLD) {
         updateColor("orange")
-        details.push(`Vibe X: ${formatNumber(vibeX)} m/s/s`)
       }
+      details.push(`Vibration X: ${formatNumber(vibeX)} m/s/s`)
 
       const vibeY = vibrationData.vibration_y
       if (vibeY > VIBRATION_ERROR_THRESHOLD) {
         updateColor("red")
-        details.push(`Vibe Y: ${formatNumber(vibeY)} m/s/s`)
       } else if (vibeY > VIBRATION_WARN_THRESHOLD) {
         updateColor("orange")
-        details.push(`Vibe Y: ${formatNumber(vibeY)} m/s/s`)
       }
+      details.push(`Vibration Y: ${formatNumber(vibeY)} m/s/s`)
 
       const vibeZ = vibrationData.vibration_z
       if (vibeZ > VIBRATION_ERROR_THRESHOLD) {
         updateColor("red")
-        details.push(`Vibe Z: ${formatNumber(vibeZ)} m/s/s`)
       } else if (vibeZ > VIBRATION_WARN_THRESHOLD) {
         updateColor("orange")
-        details.push(`Vibe Z: ${formatNumber(vibeZ)} m/s/s`)
       }
+      details.push(`Vibration Z: ${formatNumber(vibeZ)} m/s/s`)
 
       // Check for clipping (clipping indicates accelerometer saturation)
       const totalClipping =
@@ -67,11 +64,12 @@ export default function VehicleCardVibrationStatus({
         vibrationData.clipping_1 +
         vibrationData.clipping_2
 
+      details.push(
+        `Clipping: [${vibrationData.clipping_0}, ${vibrationData.clipping_1}, ${vibrationData.clipping_2}]`,
+      )
+
       if (totalClipping > 0) {
         updateColor("red")
-        details.push(
-          `Clipping: [${vibrationData.clipping_0}, ${vibrationData.clipping_1}, ${vibrationData.clipping_2}]`,
-        )
       }
 
       return { color, details }
@@ -83,10 +81,9 @@ export default function VehicleCardVibrationStatus({
 
   return (
     <Tooltip
-      disabled={!statusData.details.length}
       label={
         <>
-          <Text>Vibration Issues:</Text>
+          <Text>Vibration Status:</Text>
           <List>
             {statusData.details.map((detail, index) => (
               <List.Item key={index}>{detail}</List.Item>
@@ -94,6 +91,8 @@ export default function VehicleCardVibrationStatus({
           </List>
         </>
       }
+      color="dark"
+      className="cursor-pointer"
     >
       <Text c={statusData.color} fw={statusData.color !== "green" ? 700 : 400}>
         VIBE

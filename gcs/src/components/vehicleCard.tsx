@@ -78,7 +78,7 @@ export default function VehicleCard({
 
   return (
     <div className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-4">
-      <div className="flex flex-row gap-6 items-center">
+      <div className="flex flex-row gap-6 items-center cursor-default">
         <div className="flex flex-row gap-1 items-center">
           <Text fw={700} c={color} size="xl">
             Vehicle {sysId}
@@ -90,7 +90,7 @@ export default function VehicleCard({
         </Text>
         <Text size="xl">{flightModesMap[flightMode]}</Text>
       </div>
-      <div className="flex flex-row gap-6">
+      <div className="flex flex-row gap-6 cursor-default">
         <div className="flex flex-col">
           <Text size="lg">
             ALT: {formatNumber(mmToM(globalPositionIntData?.relative_alt))}
@@ -106,7 +106,7 @@ export default function VehicleCard({
           </Text>
         </div>
       </div>
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row gap-2 cursor-default">
         <VehicleCardSensorStatus sysId={sysId} />
         <VehicleCardGpsStatus sysId={sysId} />
         <VehicleCardVibrationStatus sysId={sysId} />
