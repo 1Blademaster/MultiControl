@@ -52,6 +52,7 @@ export default function VehicleCardContextMenu({
         onChange={setOpened}
         position="bottom-start"
         withinPortal
+        radius={0}
       >
         <Menu.Target>
           <div

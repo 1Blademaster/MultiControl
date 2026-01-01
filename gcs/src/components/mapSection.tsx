@@ -1,7 +1,7 @@
 import { useLocalStorage } from "@mantine/hooks"
 import "maplibre-gl/dist/maplibre-gl.css"
-import React, { useEffect, useMemo } from "react"
-import Map, { MapRef } from "react-map-gl/maplibre"
+import React, { useEffect, useMemo, useState } from "react"
+import Map, { MapLayerMouseEvent, MapRef } from "react-map-gl/maplibre"
 import { useDispatch, useSelector } from "react-redux"
 import {
   makeGetGlobalPositionIntData,
@@ -13,6 +13,7 @@ import {
   setFollowedVehicle,
 } from "../redux/slices/vehiclesSlice"
 import { intToCoord } from "../utils/dataFormatters"
+import MapContextMenu from "./mapContextMenu"
 import VehicleMarker from "./vehicleMarker"
 
 interface MapSectionProps {
@@ -25,6 +26,13 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
   const vehicleColors = useSelector(selectVehicleColors)
   const centeredVehicleId = useSelector(selectCenteredVehicleId)
   const followedVehicleId = useSelector(selectFollowedVehicleId)
+
+  const [contextMenuOpened, setContextMenuOpened] = useState(false)
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
+  const [contextMenuCoordinates, setContextMenuCoordinates] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
 
   const selectFollowedVehiclePosition = useMemo(
     () =>
@@ -88,14 +96,34 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
     }
   }, [followedVehicleId, followedVehiclePosition, passedRef])
 
+  function handleCenterAllVehicles() {
+    // Placeholder for centering all vehicles logic
+    console.log("Center all vehicles - to be implemented")
+    // You can implement the logic here
+  }
+
+  function handleMapContextMenu(e: MapLayerMouseEvent) {
+    e.preventDefault()
+    setContextMenuPosition({ x: e.point.x, y: e.point.y })
+    setContextMenuCoordinates({ lat: e.lngLat.lat, lng: e.lngLat.lng })
+    setContextMenuOpened(true)
+  }
+
   return (
-    <div className="w-initial h-full focus-visible:outline-none" id="map">
+    <MapContextMenu
+      onCenterAllVehicles={handleCenterAllVehicles}
+      opened={contextMenuOpened}
+      onClose={() => setContextMenuOpened(false)}
+      position={contextMenuPosition}
+      coordinates={contextMenuCoordinates}
+    >
       <Map
         initialViewState={initialViewState}
         mapStyle={`https://api.maptiler.com/maps/hybrid/style.json?key=${import.meta.env.VITE_MAPTILER_API_KEY}`}
         ref={passedRef}
         attributionControl={false}
         dragRotate={false}
+        onContextMenu={handleMapContextMenu}
         onDragStart={() => {
           dispatch(setFollowedVehicle(null))
         }}
@@ -117,7 +145,7 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
           />
         ))}
       </Map>
-    </div>
+    </MapContextMenu>
   )
 }
 
