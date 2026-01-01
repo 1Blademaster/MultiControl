@@ -1,10 +1,12 @@
 import { useLocalStorage } from "@mantine/hooks"
+import { center, points } from "@turf/turf"
 import "maplibre-gl/dist/maplibre-gl.css"
 import React, { useEffect, useMemo, useState } from "react"
 import Map, { MapLayerMouseEvent, MapRef } from "react-map-gl/maplibre"
 import { useDispatch, useSelector } from "react-redux"
 import {
   makeGetGlobalPositionIntData,
+  selectAllVehiclesLatLon,
   selectCenteredVehicleId,
   selectFollowedVehicleId,
   selectVehicleColors,
@@ -26,6 +28,7 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
   const vehicleColors = useSelector(selectVehicleColors)
   const centeredVehicleId = useSelector(selectCenteredVehicleId)
   const followedVehicleId = useSelector(selectFollowedVehicleId)
+  const allVehiclesLatLon = useSelector(selectAllVehiclesLatLon)
 
   const [contextMenuOpened, setContextMenuOpened] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
@@ -97,9 +100,20 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
   }, [followedVehicleId, followedVehiclePosition, passedRef])
 
   function handleCenterAllVehicles() {
-    // Placeholder for centering all vehicles logic
-    console.log("Center all vehicles - to be implemented")
-    // You can implement the logic here
+    if (!allVehiclesLatLon.length) return
+
+    const centerCoords = center(
+      points(allVehiclesLatLon.map((coord) => [coord.lng, coord.lat])),
+    ).geometry.coordinates
+    if (passedRef) {
+      const mapRef = passedRef as React.MutableRefObject<MapRef | null>
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [centerCoords[0], centerCoords[1]],
+          duration: 250,
+        })
+      }
+    }
   }
 
   function handleMapContextMenu(e: MapLayerMouseEvent) {

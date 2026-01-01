@@ -1,6 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { intToCoord } from "../../utils/dataFormatters"
 import { RootState } from "../store"
-
 export enum VehicleType {
   UNKNOWN = "unknown",
   COPTER = "copter",
@@ -296,6 +296,12 @@ const vehiclesSlice = createSlice({
     selectCenteredVehicleId: (state) => state.centeredVehicleId,
     selectFollowedVehicleId: (state) => state.followedVehicleId,
     selectStatusTextMessages: (state) => state.statusTextMessages,
+    selectAllVehiclesLatLon: (state) => {
+      return Object.values(state.globalPositionIntData).map((data) => ({
+        lat: intToCoord(data.lat),
+        lng: intToCoord(data.lon),
+      }))
+    },
   },
 })
 
@@ -334,6 +340,7 @@ export const {
   selectCenteredVehicleId,
   selectFollowedVehicleId,
   selectStatusTextMessages,
+  selectAllVehiclesLatLon,
 } = vehiclesSlice.selectors
 
 // Memoized selector factories
