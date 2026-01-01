@@ -117,6 +117,8 @@ const initialState = {
   vehicleTypes: {} as { [key: number]: VehicleType },
   vehicleColors: {} as { [key: number]: string },
   hoveredVehicleId: null as number | null,
+  centeredVehicleId: null as number | null,
+  followedVehicleId: null as number | null,
   statusTextMessages: [] as StatusTextMessageRecord[],
   heartbeatData: {} as { [key: number]: HeartbeatRecord },
   vfrHudData: {} as { [key: number]: VfrHudRecord },
@@ -254,6 +256,12 @@ const vehiclesSlice = createSlice({
     setHoveredVehicle: (state, action: PayloadAction<number | null>) => {
       state.hoveredVehicleId = action.payload
     },
+    setCenteredVehicle: (state, action: PayloadAction<number | null>) => {
+      state.centeredVehicleId = action.payload
+    },
+    setFollowedVehicle: (state, action: PayloadAction<number | null>) => {
+      state.followedVehicleId = action.payload
+    },
 
     emitArmVehicle: (
       _state,
@@ -285,6 +293,8 @@ const vehiclesSlice = createSlice({
     selectVehicleTypes: (state) => state.vehicleTypes,
     selectVehicleColors: (state) => state.vehicleColors,
     selectHoveredVehicleId: (state) => state.hoveredVehicleId,
+    selectCenteredVehicleId: (state) => state.centeredVehicleId,
+    selectFollowedVehicleId: (state) => state.followedVehicleId,
     selectStatusTextMessages: (state) => state.statusTextMessages,
   },
 })
@@ -306,6 +316,8 @@ export const {
   updateVibrationData,
   updateEkfStatusReportData,
   setHoveredVehicle,
+  setCenteredVehicle,
+  setFollowedVehicle,
 
   emitArmVehicle,
   emitArmAllVehicles,
@@ -319,6 +331,8 @@ export const {
   selectVehicleTypes,
   selectVehicleColors,
   selectHoveredVehicleId,
+  selectCenteredVehicleId,
+  selectFollowedVehicleId,
   selectStatusTextMessages,
 } = vehiclesSlice.selectors
 
