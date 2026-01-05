@@ -229,7 +229,7 @@ export default function ConnectionModal() {
             animated
             size="lg"
             transitionDuration={300}
-            value={(secondsWaitedForConnection / 10) * 100}
+            value={(secondsWaitedForConnection / 5) * 100} // Need to extract into setting
             className="w-full mx-auto my-4"
           />
         )}
