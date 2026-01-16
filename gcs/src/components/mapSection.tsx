@@ -16,6 +16,7 @@ import {
   selectCenteredVehicleId,
   selectFollowedVehicleId,
   selectGlobalPositionIntData,
+  selectGpsTracks,
   selectTargetPositions,
   selectVehicleColors,
   selectVehicleSysIds,
@@ -40,6 +41,7 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
   const followedVehicleId = useSelector(selectFollowedVehicleId)
   const allVehiclesLatLon = useSelector(selectAllVehiclesLatLon)
   const globalPositionIntData = useSelector(selectGlobalPositionIntData)
+  const gpsTracks = useSelector(selectGpsTracks)
 
   const [contextMenuOpened, setContextMenuOpened] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
@@ -180,6 +182,35 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
         cursor="default"
         style={{ outline: "none" }}
       >
+        {/* Draw GPS tracks */}
+        {vehicleSysIds.map((sysId) => {
+          const track = gpsTracks[sysId]
+
+          if (!track || track.length < 2) return null
+
+          const trackGeoJSON = {
+            type: "Feature" as const,
+            properties: {},
+            geometry: {
+              type: "LineString" as const,
+              coordinates: track.map((point) => [point.lon, point.lat]),
+            },
+          }
+
+          return (
+            <Source key={`track-${sysId}`} type="geojson" data={trackGeoJSON}>
+              <Layer
+                id={`track-layer-${sysId}`}
+                type="line"
+                paint={{
+                  "line-color": vehicleColors[sysId],
+                  "line-width": 2,
+                }}
+              />
+            </Source>
+          )
+        })}
+
         {/* Draw dashed lines from vehicles to their target positions */}
         {Object.values(targetPositions).map((target) => {
           const vehiclePosition = globalPositionIntData[target.system_id]

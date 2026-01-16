@@ -119,6 +119,13 @@ interface TargetPositionRecord {
   altitude: number
 }
 
+interface GpsTrackPoint {
+  lat: number
+  lon: number
+}
+
+const MAX_TRACK_POINTS = 300
+
 const initialState = {
   vehicleSysIds: [] as number[],
   vehicleTypes: {} as { [key: number]: VehicleType },
@@ -137,6 +144,7 @@ const initialState = {
   vibrationData: {} as { [key: number]: VibrationDataRecord },
   ekfStatusReportData: {} as { [key: number]: EkfStatusReportDataRecord },
   targetPositions: {} as { [key: number]: TargetPositionRecord },
+  gpsTracks: {} as { [key: number]: GpsTrackPoint[] },
 }
 
 const MAV_MODE_FLAG_SAFETY_ARMED = 128
@@ -189,6 +197,7 @@ const vehiclesSlice = createSlice({
       state.vehicleSysIds = []
       state.vehicleColors = {}
       state.vehicleTypes = {}
+      state.gpsTracks = {}
     },
     removeVehicle: (state, action: PayloadAction<{ system_id: number }>) => {
       state.vehicleSysIds = state.vehicleSysIds.filter(
@@ -196,6 +205,7 @@ const vehiclesSlice = createSlice({
       )
       delete state.vehicleColors[action.payload.system_id]
       delete state.vehicleTypes[action.payload.system_id]
+      delete state.gpsTracks[action.payload.system_id]
     },
     appendToStatusTextMessages: (
       state,
@@ -221,6 +231,30 @@ const vehiclesSlice = createSlice({
     ) => {
       const data = action.payload
       state.globalPositionIntData[data.system_id] = data
+
+      // Add point to GPS track
+      const track = state.gpsTracks[data.system_id] || []
+      const newPoint = {
+        lat: intToCoord(data.lat),
+        lon: intToCoord(data.lon),
+      }
+
+      // Only add if the point has changed (avoid duplicates)
+      const lastPoint = track[track.length - 1]
+      if (
+        !lastPoint ||
+        lastPoint.lat !== newPoint.lat ||
+        lastPoint.lon !== newPoint.lon
+      ) {
+        track.push(newPoint)
+
+        // Limit track to MAX_TRACK_POINTS
+        if (track.length > MAX_TRACK_POINTS) {
+          track.shift() // Remove oldest point
+        }
+
+        state.gpsTracks[data.system_id] = track
+      }
     },
     updateAttitudeData: (state, action: PayloadAction<AttitudeDataRecord>) => {
       const data = action.payload
@@ -334,6 +368,7 @@ const vehiclesSlice = createSlice({
     },
     selectTargetPositions: (state) => state.targetPositions,
     selectGlobalPositionIntData: (state) => state.globalPositionIntData,
+    selectGpsTracks: (state) => state.gpsTracks,
   },
 })
 
@@ -378,6 +413,7 @@ export const {
   selectAllVehiclesLatLon,
   selectTargetPositions,
   selectGlobalPositionIntData,
+  selectGpsTracks,
 } = vehiclesSlice.selectors
 
 // Memoized selector factories
