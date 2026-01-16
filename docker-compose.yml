@@ -4,12 +4,12 @@ services:
     container_name: ardupilot-copter1
     environment:
       - VEHICLE_TYPE=Copter
-      - INSTANCE=0
       - SYSID=1
       - LOCATION=CMAC
       - CUSTOM_LOC=-35.363,149.165,584,0
     ports:
       - "5761:5760/tcp"
+      - "5762:5762/tcp"
     networks:
       - ardupilot-net
     restart: unless-stopped
@@ -19,12 +19,12 @@ services:
     container_name: ardupilot-copter2
     environment:
       - VEHICLE_TYPE=Copter
-      - INSTANCE=0
       - SYSID=2
       - LOCATION=CMAC
       - CUSTOM_LOC=-35.364,149.165,584,0
     ports:
       - "5771:5760/tcp"
+      - "5772:5762/tcp"
     networks:
       - ardupilot-net
     restart: unless-stopped
@@ -34,12 +34,12 @@ services:
     container_name: ardupilot-plane
     environment:
       - VEHICLE_TYPE=Plane
-      - INSTANCE=0
       - SYSID=3
       - LOCATION=CMAC
       - CUSTOM_LOC=-35.365,149.165,584,0
     ports:
       - "5781:5760/tcp"
+      - "5782:5762/tcp"
     networks:
       - ardupilot-net
     restart: unless-stopped
@@ -49,12 +49,12 @@ services:
     container_name: ardupilot-rover
     environment:
       - VEHICLE_TYPE=Rover
-      - INSTANCE=0
       - SYSID=4
       - LOCATION=CMAC
       - CUSTOM_LOC=-35.366,149.165,584,0
     ports:
       - "5791:5760/tcp"
+      - "5792:5762/tcp"
     networks:
       - ardupilot-net
     restart: unless-stopped
