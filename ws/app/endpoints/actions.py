@@ -26,6 +26,11 @@ class SetFlightModeAllVehiclesSettings(TypedDict):
     flight_mode: str
 
 
+class CopterTakeoffSettings(TypedDict):
+    system_id: int
+    altitude: float
+
+
 @socketio.on("arm_vehicle")
 def arm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     if state.radio_link is None:
@@ -171,3 +176,48 @@ def set_all_vehicles_flight_mode(
     set_flight_mode_result = state.radio_link.set_all_vehicles_flight_mode(flight_mode)
 
     socketio.emit("set_all_vehicles_flight_mode_result", set_flight_mode_result)
+
+
+@socketio.on("copter_takeoff")
+def copter_takeoff(takeoff_settings: CopterTakeoffSettings) -> None:
+    if state.radio_link is None:
+        logger.warning("Not connected to radio link, cannot takeoff copter")
+        return
+
+    system_id = takeoff_settings.get("system_id")
+    if system_id is None:
+        socketio.emit(
+            "copter_takeoff_result",
+            {
+                "success": False,
+                "message": "No system ID specified while trying to takeoff copter",
+            },
+        )
+        return
+
+    altitude = takeoff_settings.get("altitude")
+    if altitude is None:
+        socketio.emit(
+            "copter_takeoff_result",
+            {
+                "success": False,
+                "message": "No altitude specified while trying to takeoff copter",
+            },
+        )
+        return
+
+    try:
+        altitude = float(altitude)
+    except ValueError:
+        socketio.emit(
+            "copter_takeoff_result",
+            {
+                "success": False,
+                "message": "Invalid altitude specified while trying to takeoff copter",
+            },
+        )
+        return
+
+    takeoff_result = state.radio_link.copter_takeoff(system_id, altitude)
+
+    socketio.emit("copter_takeoff_result", takeoff_result)

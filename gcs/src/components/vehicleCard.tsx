@@ -83,7 +83,7 @@ export default function VehicleCard({
   }
 
   return (
-    <VehicleCardContextMenu sysId={sysId}>
+    <VehicleCardContextMenu sysId={sysId} vehicleType={vehicleType}>
       <div
         className="w-120 bg-zinc-800/80 p-2 flex flex-col gap-2"
         style={{

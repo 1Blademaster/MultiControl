@@ -485,6 +485,81 @@ class RadioLink:
                 "message": f"Could not disarm all vehicles, {e}",
             }
 
+    def copter_takeoff(self, system_id: int, altitude: float) -> Response:
+        try:
+            target_vehicle = self.vehicles[system_id]
+
+            if target_vehicle is None:
+                return {
+                    "success": False,
+                    "message": "Vehicle not found",
+                }
+
+            # Ensure vehicle is Copter
+            if target_vehicle.vehicle_type != VehicleType.COPTER:
+                return {
+                    "success": False,
+                    "message": "Vehicle is not a copter",
+                }
+
+            # Set GUIDED mode
+            set_guided_mode_res = self.set_vehicle_flight_mode(
+                system_id, mavutil.mavlink.COPTER_MODE_GUIDED
+            )
+
+            if not set_guided_mode_res.get("success"):
+                return set_guided_mode_res
+
+            if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
+                return {
+                    "success": False,
+                    "message": "Could not reserve COMMAND_ACK messages",
+                }
+
+            # Send MAV_CMD_NAV_TAKEOFF command
+            self.send_command_to_vehicle(
+                system_id,
+                mavlink.MAV_CMD_NAV_TAKEOFF,
+                param1=0,  # pitch
+                param2=0,  # empty
+                param3=0,  # empty
+                param4=0,  # yaw angle (0 = use current)
+                param5=0,  # latitude (0 = use current)
+                param6=0,  # longitude (0 = use current)
+                param7=altitude,  # altitude in meters
+            )
+
+            response = self.wait_for_message(
+                "COMMAND_ACK",
+                self.controller_id,
+                conditional_func=lambda msg: (msg.get_srcSystem() == system_id)
+                and (msg.command == mavutil.mavlink.MAV_CMD_NAV_TAKEOFF),
+            )
+
+            if command_accepted(
+                response, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, self.logger
+            ):
+                self.logger.debug(f"[{system_id}] Copter takeoff command accepted")
+                return {
+                    "success": True,
+                    "message": "Copter takeoff command sent successfully",
+                }
+            else:
+                self.logger.debug(f"[{system_id}] Copter takeoff command failed")
+                return {
+                    "success": False,
+                    "message": "Could not takeoff copter, command not accepted",
+                }
+
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {
+                "success": False,
+                "message": "Could not takeoff copter, serial exception",
+            }
+        finally:
+            self.release_message_type("COMMAND_ACK", self.controller_id)
+
     def set_vehicle_flight_mode(self, system_id: int, new_flight_mode: int) -> Response:
         if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
             return {
