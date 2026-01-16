@@ -4,6 +4,6 @@ I couldn't really find any swarm GCS applications out there. I have a multipoint
 
 ![UI Screenshot](readme_screenshot.png)
 
-Can launch the SITL instances using `docker-compose up --build` and then use mavproxy to combine the streams into one stream with `mavproxy --master=tcp:127.0.0.1:5761 --master=tcp:127.0.0.1:5771 --master=tcp:127.0.0.1:5781 --master=tcp:127.0.0.1:5791 --out=udpbcast:127.0.0.1:14550`.
+Can launch the SITL instances using `docker-compose up --build` and then use mavproxy to combine the streams into one stream with `mavproxy --master=tcp:127.0.0.1:5761 --master=tcp:127.0.0.1:5771 --master=tcp:127.0.0.1:5781 --master=tcp:127.0.0.1:5791 --out=udpbcast:127.0.0.1:14550`. You can also connect to individual vehicles on `tcp:127.0.0.1:5762` (5772, 5782 or 5792).
 
 To run copy the `.env.sample` as `.env` and enter in your maptiler API key. Then in two terminals run `yarn dev` in the `gcs` directory and `python app.py` in the `ws` directory.
