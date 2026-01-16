@@ -31,6 +31,13 @@ class CopterTakeoffSettings(TypedDict):
     altitude: float
 
 
+class GotoPositionSettings(TypedDict):
+    system_id: int
+    latitude: float
+    longitude: float
+    altitude: float
+
+
 @socketio.on("arm_vehicle")
 def arm_vehicle(arm_settings: ArmDisarmSettings) -> None:
     if state.radio_link is None:
@@ -221,3 +228,74 @@ def copter_takeoff(takeoff_settings: CopterTakeoffSettings) -> None:
     takeoff_result = state.radio_link.copter_takeoff(system_id, altitude)
 
     socketio.emit("copter_takeoff_result", takeoff_result)
+
+
+@socketio.on("goto_position")
+def goto_position(position_settings: GotoPositionSettings) -> None:
+    if state.radio_link is None:
+        logger.warning("Not connected to radio link, cannot goto position")
+        return
+
+    system_id = position_settings.get("system_id")
+    if system_id is None:
+        socketio.emit(
+            "goto_position_result",
+            {
+                "success": False,
+                "message": "No system ID specified while trying to goto position",
+            },
+        )
+        return
+
+    latitude = position_settings.get("latitude")
+    if latitude is None:
+        socketio.emit(
+            "goto_position_result",
+            {
+                "success": False,
+                "message": "No latitude specified while trying to goto position",
+            },
+        )
+        return
+
+    longitude = position_settings.get("longitude")
+    if longitude is None:
+        socketio.emit(
+            "goto_position_result",
+            {
+                "success": False,
+                "message": "No longitude specified while trying to goto position",
+            },
+        )
+        return
+
+    altitude = position_settings.get("altitude")
+    if altitude is None:
+        socketio.emit(
+            "goto_position_result",
+            {
+                "success": False,
+                "message": "No altitude specified while trying to goto position",
+            },
+        )
+        return
+
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+        altitude = float(altitude)
+    except ValueError:
+        socketio.emit(
+            "goto_position_result",
+            {
+                "success": False,
+                "message": "Invalid coordinates specified while trying to goto position",
+            },
+        )
+        return
+
+    goto_result = state.radio_link.goto_position(
+        system_id, latitude, longitude, altitude
+    )
+
+    socketio.emit("goto_position_result", goto_result)

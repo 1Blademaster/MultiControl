@@ -1,14 +1,22 @@
 import { useLocalStorage } from "@mantine/hooks"
-import { center, points } from "@turf/turf"
+import { center, distance, points } from "@turf/turf"
 import "maplibre-gl/dist/maplibre-gl.css"
 import React, { useEffect, useMemo, useState } from "react"
-import Map, { MapLayerMouseEvent, MapRef } from "react-map-gl/maplibre"
+import Map, {
+  Layer,
+  MapLayerMouseEvent,
+  MapRef,
+  Source,
+} from "react-map-gl/maplibre"
 import { useDispatch, useSelector } from "react-redux"
 import {
+  clearTargetPosition,
   makeGetGlobalPositionIntData,
   selectAllVehiclesLatLon,
   selectCenteredVehicleId,
   selectFollowedVehicleId,
+  selectGlobalPositionIntData,
+  selectTargetPositions,
   selectVehicleColors,
   selectVehicleSysIds,
   setCenteredVehicle,
@@ -16,6 +24,7 @@ import {
 } from "../redux/slices/vehiclesSlice"
 import { intToCoord } from "../utils/dataFormatters"
 import MapContextMenu from "./mapContextMenu"
+import TargetPositionMarker from "./targetPositionMarker"
 import VehicleMarker from "./vehicleMarker"
 
 interface MapSectionProps {
@@ -26,9 +35,11 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
   const dispatch = useDispatch()
   const vehicleSysIds = useSelector(selectVehicleSysIds)
   const vehicleColors = useSelector(selectVehicleColors)
+  const targetPositions = useSelector(selectTargetPositions)
   const centeredVehicleId = useSelector(selectCenteredVehicleId)
   const followedVehicleId = useSelector(selectFollowedVehicleId)
   const allVehiclesLatLon = useSelector(selectAllVehiclesLatLon)
+  const globalPositionIntData = useSelector(selectGlobalPositionIntData)
 
   const [contextMenuOpened, setContextMenuOpened] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
@@ -64,6 +75,24 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
     defaultValue: { latitude: 53.381655, longitude: -1.481434, zoom: 4 },
     getInitialValueInEffect: false,
   })
+
+  // Check if vehicles have reached their target positions and clear markers
+  useEffect(() => {
+    Object.values(targetPositions).forEach((target) => {
+      const vehiclePosition = globalPositionIntData[target.system_id]
+      if (vehiclePosition) {
+        const distance_m = distance(
+          [intToCoord(vehiclePosition.lon), intToCoord(vehiclePosition.lat)],
+          [target.lon, target.lat],
+          { units: "meters" },
+        )
+        // If within 1 meter, clear the target position
+        if (distance_m <= 1) {
+          dispatch(clearTargetPosition(target.system_id))
+        }
+      }
+    })
+  }, [globalPositionIntData, targetPositions, dispatch])
 
   // Handle centering on a vehicle (one-time)
   useEffect(() => {
@@ -151,6 +180,56 @@ function MapSectionNonMemo({ passedRef }: MapSectionProps) {
         cursor="default"
         style={{ outline: "none" }}
       >
+        {/* Draw dashed lines from vehicles to their target positions */}
+        {Object.values(targetPositions).map((target) => {
+          const vehiclePosition = globalPositionIntData[target.system_id]
+
+          if (!vehiclePosition) return null
+
+          const lineGeoJSON = {
+            type: "Feature" as const,
+            properties: {},
+            geometry: {
+              type: "LineString" as const,
+              coordinates: [
+                [
+                  intToCoord(vehiclePosition.lon),
+                  intToCoord(vehiclePosition.lat),
+                ],
+                [target.lon, target.lat],
+              ],
+            },
+          }
+
+          return (
+            <Source
+              key={`line-${target.system_id}`}
+              type="geojson"
+              data={lineGeoJSON}
+            >
+              <Layer
+                id={`line-layer-${target.system_id}`}
+                type="line"
+                paint={{
+                  "line-color": vehicleColors[target.system_id],
+                  "line-width": 2,
+                  "line-dasharray": [2, 2],
+                }}
+              />
+            </Source>
+          )
+        })}
+
+        {Object.values(targetPositions).map((target) => (
+          <TargetPositionMarker
+            key={target.system_id}
+            lat={target.lat}
+            lon={target.lon}
+            color={vehicleColors[target.system_id]}
+            altitude={target.altitude}
+          />
+        ))}
+
         {vehicleSysIds.map((sysId) => (
           <VehicleMarker
             key={sysId}

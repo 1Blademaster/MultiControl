@@ -560,6 +560,111 @@ class RadioLink:
         finally:
             self.release_message_type("COMMAND_ACK", self.controller_id)
 
+    def goto_position(
+        self, system_id: int, latitude: float, longitude: float, altitude: float
+    ) -> Response:
+        """
+        Send a vehicle to a specific GPS position with altitude.
+        Uses SET_POSITION_TARGET_GLOBAL_INT with relative altitude frame.
+        Only position (x,y,z) is controlled, velocity and acceleration are ignored.
+        """
+        try:
+            target_vehicle = self.vehicles.get(system_id)
+
+            if target_vehicle is None:
+                return {
+                    "success": False,
+                    "message": "Vehicle not found",
+                }
+
+            if self.master is None:
+                return {
+                    "success": False,
+                    "message": "Not connected to radio link",
+                }
+
+            # Set vehicle to guided mode
+            guided_mode_number = next(
+                (
+                    key
+                    for key, val in target_vehicle.flight_mode_map.items()
+                    if val == "GUIDED"
+                ),
+                None,
+            )
+
+            if guided_mode_number is None:
+                return {
+                    "success": False,
+                    "message": f"Could not find GUIDED mode for vehicle {system_id}",
+                }
+
+            set_guided_mode_res = self.set_vehicle_flight_mode(
+                system_id, guided_mode_number
+            )
+
+            if not set_guided_mode_res.get("success"):
+                return set_guided_mode_res
+
+            # Convert lat/lon from degrees to degrees * 1e7 (int32)
+            lat_int = int(latitude * 1e7)
+            lon_int = int(longitude * 1e7)
+
+            if target_vehicle.vehicle_type == VehicleType.PLANE:
+                self.master.mav.mission_item_int_send(
+                    system_id,
+                    mavlink.MAV_COMP_ID_AUTOPILOT1,
+                    0,  # seq
+                    mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                    2,  # current=2 means guided mode target, doesn't overwrite mission
+                    1,  # Autocontinue to next waypoint. 0: false, 1: true.
+                    0,  # param1 (hold time)
+                    0,  # param2 (acceptance radius)
+                    0,  # param3 (pass through waypoint)
+                    float("nan"),  # param4 (desired yaw angle)
+                    lat_int,
+                    lon_int,
+                    altitude,  # altitude in meters
+                    mavutil.mavlink.MAV_MISSION_TYPE_MISSION,
+                )
+            else:
+                self.master.mav.set_position_target_global_int_send(
+                    0,  # time_boot_ms (not used)
+                    system_id,  # target system
+                    mavlink.MAV_COMP_ID_AUTOPILOT1,  # target component
+                    mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # coordinate frame
+                    65016,  # type mask, ignore all values except x, y, z
+                    lat_int,  # latitude (degrees * 1e7)
+                    lon_int,  # longitude (degrees * 1e7)
+                    altitude,  # altitude (meters, relative)
+                    0,  # vx (not used)
+                    0,  # vy (not used)
+                    0,  # vz (not used)
+                    0,  # afx (not used)
+                    0,  # afy (not used)
+                    0,  # afz (not used)
+                    0,  # yaw (not used)
+                    0,  # yaw_rate (not used)
+                )
+
+            self.logger.debug(
+                f"[{system_id}] Sent goto position command: "
+                f"lat={latitude}, lon={longitude}, alt={altitude}m (relative)"
+            )
+
+            return {
+                "success": True,
+                "message": f"Set guided position target for vehicle {system_id}",
+            }
+
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+            return {
+                "success": False,
+                "message": f"Could not set guided position target: {str(e)}",
+            }
+
     def set_vehicle_flight_mode(self, system_id: int, new_flight_mode: int) -> Response:
         if not self.reserve_message_type("COMMAND_ACK", self.controller_id):
             return {

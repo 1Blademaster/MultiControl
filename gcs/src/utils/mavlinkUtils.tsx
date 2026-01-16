@@ -34,3 +34,14 @@ export const getFlightModesMap = (
       return CopterMode
   }
 }
+
+export const isGuidedMode = (
+  vehicleType: VehicleType,
+  customMode: number,
+): boolean => {
+  const flightModesMap = getFlightModesMap(vehicleType)
+  const flightModeName = Object.entries(flightModesMap).find(
+    ([_, value]) => value === customMode,
+  )?.[0]
+  return flightModeName === "GUIDED"
+}

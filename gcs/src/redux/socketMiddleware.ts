@@ -6,6 +6,7 @@ import {
 
 import { Middleware, UnknownAction } from "@reduxjs/toolkit"
 import SocketFactory, { SocketConnection } from "../socket"
+import { isGuidedMode } from "../utils/mavlinkUtils"
 import {
   showErrorNotification,
   showSuccessNotification,
@@ -24,7 +25,9 @@ import {
 import {
   addVehicles,
   appendToStatusTextMessages,
+  clearAllTargetPositions,
   clearStatusTextMessages,
+  clearTargetPosition,
   removeVehicles,
   updateAttitudeData,
   updateBatteryStatusData,
@@ -57,6 +60,7 @@ const ActionEvents = Object.freeze({
   onSetVehicleFlightModeResult: "set_vehicle_flight_mode_result",
   onSetAllVehiclesFlightModeResult: "set_all_vehicles_flight_mode_result",
   onCopterTakeoffResult: "copter_takeoff_result",
+  onGotoPositionResult: "goto_position_result",
 })
 
 const socketMiddleware: Middleware = (store) => {
@@ -92,6 +96,7 @@ const socketMiddleware: Middleware = (store) => {
 
             store.dispatch(removeVehicles())
             store.dispatch(clearStatusTextMessages())
+            store.dispatch(clearAllTargetPositions())
 
             if (msg.data && msg.data.vehicles) {
               store.dispatch(
@@ -155,7 +160,14 @@ const socketMiddleware: Middleware = (store) => {
           if (msg.success && msg.data) {
             const packet = msg.data
             switch (packet.mavpackettype) {
-              case "HEARTBEAT":
+              case "HEARTBEAT": {
+                // Get previous flight mode before updating
+                const state = store.getState()
+                const previousHeartbeat =
+                  state.vehicles.heartbeatData[packet.system_id]
+                const vehicleType =
+                  state.vehicles.vehicleTypes[packet.system_id]
+
                 store.dispatch(
                   updateHeartbeatData({
                     system_id: packet.system_id,
@@ -166,7 +178,25 @@ const socketMiddleware: Middleware = (store) => {
                     system_status: packet.system_status,
                   }),
                 )
+
+                // Check if vehicle left GUIDED mode
+                if (previousHeartbeat && vehicleType) {
+                  const wasInGuided = isGuidedMode(
+                    vehicleType,
+                    previousHeartbeat.custom_mode,
+                  )
+                  const isInGuided = isGuidedMode(
+                    vehicleType,
+                    packet.custom_mode,
+                  )
+
+                  if (wasInGuided && !isInGuided) {
+                    // Vehicle left GUIDED mode, clear its target position
+                    store.dispatch(clearTargetPosition(packet.system_id))
+                  }
+                }
                 break
+              }
               case "STATUSTEXT":
                 store.dispatch(
                   appendToStatusTextMessages({
@@ -321,6 +351,13 @@ const socketMiddleware: Middleware = (store) => {
           },
         )
         socket.socket.on(ActionEvents.onCopterTakeoffResult, (msg) => {
+          if (msg.success) {
+            showSuccessNotification(msg.message)
+          } else {
+            showErrorNotification(msg.message)
+          }
+        })
+        socket.socket.on(ActionEvents.onGotoPositionResult, (msg) => {
           if (msg.success) {
             showSuccessNotification(msg.message)
           } else {

@@ -112,6 +112,13 @@ interface SetFlightModeAllVehiclesPayload {
   flight_mode: string
 }
 
+interface TargetPositionRecord {
+  system_id: number
+  lat: number
+  lon: number
+  altitude: number
+}
+
 const initialState = {
   vehicleSysIds: [] as number[],
   vehicleTypes: {} as { [key: number]: VehicleType },
@@ -129,6 +136,7 @@ const initialState = {
   gpsRawIntData: {} as { [key: number]: GpsRawIntDataRecord },
   vibrationData: {} as { [key: number]: VibrationDataRecord },
   ekfStatusReportData: {} as { [key: number]: EkfStatusReportDataRecord },
+  targetPositions: {} as { [key: number]: TargetPositionRecord },
 }
 
 const MAV_MODE_FLAG_SAFETY_ARMED = 128
@@ -262,6 +270,28 @@ const vehiclesSlice = createSlice({
     setFollowedVehicle: (state, action: PayloadAction<number | null>) => {
       state.followedVehicleId = action.payload
     },
+    setTargetPosition: (
+      state,
+      action: PayloadAction<{
+        system_id: number
+        lat: number
+        lon: number
+        altitude: number
+      }>,
+    ) => {
+      state.targetPositions[action.payload.system_id] = {
+        system_id: action.payload.system_id,
+        lat: action.payload.lat,
+        lon: action.payload.lon,
+        altitude: action.payload.altitude,
+      }
+    },
+    clearTargetPosition: (state, action: PayloadAction<number>) => {
+      delete state.targetPositions[action.payload]
+    },
+    clearAllTargetPositions: (state) => {
+      state.targetPositions = {}
+    },
 
     emitArmVehicle: (
       _state,
@@ -302,6 +332,8 @@ const vehiclesSlice = createSlice({
         lng: intToCoord(data.lon),
       }))
     },
+    selectTargetPositions: (state) => state.targetPositions,
+    selectGlobalPositionIntData: (state) => state.globalPositionIntData,
   },
 })
 
@@ -324,6 +356,9 @@ export const {
   setHoveredVehicle,
   setCenteredVehicle,
   setFollowedVehicle,
+  setTargetPosition,
+  clearTargetPosition,
+  clearAllTargetPositions,
 
   emitArmVehicle,
   emitArmAllVehicles,
@@ -341,6 +376,8 @@ export const {
   selectFollowedVehicleId,
   selectStatusTextMessages,
   selectAllVehiclesLatLon,
+  selectTargetPositions,
+  selectGlobalPositionIntData,
 } = vehiclesSlice.selectors
 
 // Memoized selector factories
